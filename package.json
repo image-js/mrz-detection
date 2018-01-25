@@ -1,0 +1,47 @@
+{
+  "name": "mrz-detection",
+  "version": "0.0.0",
+  "description": "Detect Machine Readable Zones (MRZ) in images of identity documents",
+  "main": "lib/index.js",
+  "module": "src/index.js",
+  "files": [
+    "lib",
+    "src"
+  ],
+  "scripts": {
+    "eslint": "eslint src",
+    "eslint-fix": "npm run eslint -- --fix",
+    "prepublishOnly": "rollup -c",
+    "test": "run-s testonly eslint",
+    "test-travis": "eslint src && jest --coverage && codecov",
+    "testonly": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/image-js/mrz-detection.git"
+  },
+  "keywords": [],
+  "author": "Michaël Zasso",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/image-js/mrz-detection/issues"
+  },
+  "homepage": "https://github.com/image-js/mrz-detection#readme",
+  "jest": {
+    "testEnvironment": "node"
+  },
+  "devDependencies": {
+    "babel-plugin-transform-es2015-modules-commonjs": "^6.26.0",
+    "codecov": "^3.0.0",
+    "eslint": "^4.16.0",
+    "eslint-config-cheminfo": "^1.14.1",
+    "eslint-plugin-jest": "^21.7.0",
+    "image-js": "^0.16.1",
+    "jest": "^22.1.4",
+    "npm-run-all": "^4.1.2",
+    "rollup": "^0.55.0"
+  },
+  "peerDependencies": {
+    "image-js": ">=0.16.1"
+  }
+}
