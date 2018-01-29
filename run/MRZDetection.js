@@ -372,7 +372,7 @@ function getFunctions(paths) {
       }*/
     // console.log(`Parsing ${text}`);
     var data = parse(text);
-    if (!data.isValid) {
+    if (!data.valid) {
       return saveImage(images, codes.MRZ_PARSE_ERROR, filename, {
         lines: getTextAndSize(ocrResult),
         errors: data.error,

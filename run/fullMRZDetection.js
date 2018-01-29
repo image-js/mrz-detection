@@ -7,6 +7,7 @@ const IJS = require('image-js').Image;
 const tableify = require('tableify');
 const { loadAllFontData, runFontAnalysis } = require('ocr-tools');
 const mkdirp = require('mkdirp');
+const rimraf = require('rimraf');
 
 var {
   codes,
@@ -31,7 +32,10 @@ const allFingerprints = {
 };
 
 async function fullMRZDetection(paths) {
-  var { rootDir, saveHTMLFile, saveMask, saveMRZ } = paths;
+  var { rootDir, saveHTMLFile, saveMask, saveMRZ, saveDir } = paths;
+
+  rimraf.sync(saveDir);
+
   const { filterManager, getMRZ, isMRZCorrect, getLetterStats } = getFunctions(
     paths
   );
