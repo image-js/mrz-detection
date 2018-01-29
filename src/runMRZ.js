@@ -1,4 +1,6 @@
-import { getLinesFromImage, doOcrOnLines } from 'ocr-tools';
+'use strict';
+
+const { getLinesFromImage, doOcrOnLines } = require('ocr-tools');
 
 module.exports = function runOCR(image, fontFingerprint, options = {}) {
   let { lines, mask, painted, averageSurface } = getLinesFromImage(

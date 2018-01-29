@@ -1,6 +1,6 @@
 'use strict';
 
 const testMRZ = require('./fullMRZDetection');
-const paths = require('../src/paths');
+const paths = require('./paths');
 
 testMRZ(paths);

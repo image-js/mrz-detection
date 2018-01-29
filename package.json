@@ -31,7 +31,6 @@
     "testEnvironment": "node"
   },
   "devDependencies": {
-    "babel-plugin-transform-es2015-modules-commonjs": "^6.26.0",
     "codecov": "^3.0.0",
     "eslint": "^4.16.0",
     "eslint-config-cheminfo": "^1.14.1",
@@ -39,9 +38,14 @@
     "image-js": "^0.16.1",
     "jest": "^22.1.4",
     "npm-run-all": "^4.1.2",
-    "rollup": "^0.55.0"
+    "papaparse": "^4.3.6",
+    "tableify": "^1.1.0"
   },
   "peerDependencies": {
     "image-js": ">=0.16.1"
+  },
+  "dependencies": {
+    "ml-distance": "^2.1.1",
+    "mrz": "^3.0.5"
   }
 }
