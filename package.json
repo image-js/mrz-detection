@@ -21,7 +21,7 @@
     "url": "git+https://github.com/image-js/mrz-detection.git"
   },
   "keywords": [],
-  "author": "Michaël Zasso",
+  "author": "Jefferson Hernández",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/image-js/mrz-detection/issues"
