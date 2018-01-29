@@ -62,7 +62,7 @@ const maxSizeRoi = 800;
 const filterSize = 0.82;
 
 function getFunctions(paths) {
-  const { saveMRZ, rootDir, saveDir } = paths;
+  const { rootDir, saveDir } = paths;
   var lettersStats = new LettersStats(join(rootDir, 'ground.csv'));
   var checkRoi = (number) => number >= 15 && number <= 50;
 

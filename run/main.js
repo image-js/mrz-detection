@@ -13,10 +13,7 @@ const rootDir = resolve(dataPath);
 const saveDir = join(rootDir, 'data');
 const paths = {
   rootDir,
-  saveDir,
-  saveMask: join(saveDir, 'mask'),
-  saveMRZ: join(saveDir, 'mrz'),
-  saveHTMLFile: join(saveDir, 'index.html')
+  saveDir
 };
 
 testMRZ(paths);

@@ -9,10 +9,10 @@
     "src"
   ],
   "scripts": {
-    "eslint": "eslint src",
+    "eslint": "eslint src run",
     "eslint-fix": "npm run eslint -- --fix",
     "prepublishOnly": "rollup -c",
-    "test": "run-s testonly eslint",
+    "test": "run-s eslint",
     "test-travis": "eslint src && jest --coverage && codecov",
     "testonly": "jest"
   },

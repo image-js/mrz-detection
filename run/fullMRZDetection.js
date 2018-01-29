@@ -32,7 +32,7 @@ const allFingerprints = {
 };
 
 async function fullMRZDetection(paths) {
-  var { rootDir, saveHTMLFile, saveMask, saveMRZ, saveDir } = paths;
+  var { rootDir, saveDir } = paths;
 
   rimraf.sync(saveDir);
 
@@ -62,9 +62,9 @@ async function fullMRZDetection(paths) {
     var grey = image.grey({ allowGrey: true });
     var mask = grey.mask(maskOptions);
     const pngName = files[i].replace(/\.[^.]+/, '.png');
-    mkdirp.sync(saveMask);
 
-    var maskPath = join(saveMask, pngName);
+    mkdirp.sync(join(saveDir, 'mask'));
+    var maskPath = join(saveDir, 'mask', pngName);
     mask.save(maskPath);
     var manager = image.getRoiManager();
     manager.fromMask(mask);
@@ -112,9 +112,8 @@ async function fullMRZDetection(paths) {
       );
     }
 
-    mkdirp.sync(saveMRZ);
-
-    var cropPath = join(saveMRZ, pngName);
+    mkdirp.sync(join(saveDir, 'mrz'));
+    var cropPath = join(saveDir, 'mrz', pngName);
     crop.save(cropPath);
 
     // get letter mrz
@@ -154,7 +153,7 @@ async function fullMRZDetection(paths) {
   console.log(getLetterStats());
 
   fs.writeFileSync(
-    saveHTMLFile,
+    join(saveDir, 'index.html'),
     `
                 <!DOCTYPE html>
                 <html>
