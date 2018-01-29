@@ -371,11 +371,16 @@ function getFunctions(paths) {
           console.log(JSON.stringify(roi));
       }*/
     // console.log(`Parsing ${text}`);
-    var data = parse(text);
-    if (!data.valid) {
+    var data, error;
+    try {
+      data = parse(text);
+    } catch (e) {
+      error = e;
+    }
+    if (error || !data.valid) {
       return saveImage(images, codes.MRZ_PARSE_ERROR, filename, {
         lines: getTextAndSize(ocrResult),
-        errors: data.error,
+        errors: error.message || data.error,
         'Avg SA': averageSurface
       });
     }

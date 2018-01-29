@@ -44,7 +44,10 @@ async function fullMRZDetection(paths) {
 
   var files = fs.readdirSync(rootDir);
   files = files.filter(
-    (files) => files.endsWith('.png') || files.endsWith('.jpg')
+    (files) =>
+      files.toLowerCase().endsWith('.png') ||
+      files.toLowerCase().endsWith('.jpg') ||
+      files.toLowerCase().endsWith('.jpeg')
   );
   console.log(files);
   var promises = files.map((elem) => IJS.load(join(rootDir, elem)));
