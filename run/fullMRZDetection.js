@@ -1,19 +1,19 @@
 'use strict';
 
-var IJS = require('image-js').Image;
-var fs = require('fs');
-var tableify = require('tableify');
-var { loadFingerprints, runFontAnalysis } = require('ocr-tools');
+const fs = require('fs');
+const { join } = require('path');
+
+const IJS = require('image-js').Image;
+const tableify = require('tableify');
+const { loadAllFontData, runFontAnalysis } = require('ocr-tools');
+const mkdirp = require('mkdirp');
 
 var {
-  isMRZCorrect,
-  getMRZ,
-  filterManager,
-  getLetterStats,
   codes,
   fingerprintOptions,
-  roiOptions
-} = require('../src/MRZDetection');
+  roiOptions,
+  getFunctions
+} = require('./MRZDetection');
 
 // options
 const maskOptions = {
@@ -22,6 +22,7 @@ const maskOptions = {
 };
 
 const allFingerprints = {
+  baseDir: `${__dirname}/../fontData`,
   height: fingerprintOptions.height,
   width: fingerprintOptions.width,
   category: fingerprintOptions.category,
@@ -30,16 +31,19 @@ const allFingerprints = {
 };
 
 module.exports = function (paths) {
-  var { readPath, saveHTMLFile, saveMask, saveMRZ } = paths;
+  var { rootDir, saveHTMLFile, saveMask, saveMRZ } = paths;
+  const { filterManager, getMRZ, isMRZCorrect, getLetterStats } = getFunctions(
+    paths
+  );
 
-  var allFontFingerprints = loadFingerprints(allFingerprints);
+  var allFontFingerprints = loadAllFontData(allFingerprints);
 
-  var files = fs.readdirSync(readPath);
+  var files = fs.readdirSync(rootDir);
   files = files.filter(
     (files) => files.endsWith('.png') || files.endsWith('.jpg')
   );
   console.log(files);
-  var promises = files.map((elem) => IJS.load(readPath + elem));
+  var promises = files.map((elem) => IJS.load(join(rootDir, elem)));
   var table = [];
 
   return Promise.all(promises).then(function (images) {
@@ -51,16 +55,10 @@ module.exports = function (paths) {
       var grey = image.grey({ allowGrey: true });
       var mask = grey.mask(maskOptions);
 
-      if (!fs.existsSync(saveMask)) {
-        fs.mkdirSync(saveMask);
-      }
+      mkdirp.sync(saveMask);
 
-      var maskPath =
-        saveMask + files[i].replace('.png', '.bmp').replace('.jpg', '.bmp');
-      mask.save(maskPath, {
-        useCanvas: false,
-        format: 'bmp'
-      });
+      var maskPath = join(saveMask, files[i].replace('.jpg', '.png'));
+      mask.save(maskPath);
       var manager = image.getRoiManager();
       manager.fromMask(mask);
 
@@ -108,9 +106,8 @@ module.exports = function (paths) {
         );
       }
 
-      if (!fs.existsSync(saveMRZ)) {
-        fs.mkdirSync(saveMRZ);
-      }
+      mkdirp.sync(saveMRZ);
+
       var cropPath = saveMRZ + files[i];
       crop.save(cropPath, {
         useCanvas: false,
