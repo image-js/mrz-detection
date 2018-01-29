@@ -1,46 +1,42 @@
-/**
- * You need node 8.5.0 to run this script
- */
 'use strict';
 
-var rootDir = '..'; // current directory where images will be saved
-const readDirectory = `${rootDir}/mrz/`; // images directory to be processed
+const fs = require('fs');
+const IJS = require('image-js').Image;
+const parse = require('mrz').parse;
+const tableify = require('tableify');
+const { join } = require('path');
+
+const runMRZ = require('../src/runMRZ');
+const loadFontFingerprint = require('../src/util/loadFontData');
+const symbols = require('../src/util/symbolClasses').MRZ; // SYMBOLS MRZ NUMBERS
 
 const codes = {
   PREPROCESS_ERROR: {
     code: 0,
-    save: '/preprocess/'
+    save: 'preprocess'
   },
   CORRECT: {
     code: 1,
-    save: '/correct/'
+    save: 'correct'
   },
   MRZ_PARSE_ERROR: {
     // Invalid MRZ given by the parser (data that maybe doesn't have sense)
     code: 2,
-    save: '/notParse/'
+    save: 'notParse'
   },
   NO_DETECTED_TEXT: {
     // different sizes of each MRZ line
     code: 3,
-    save: '/notDetected/'
+    save: 'notDetected'
   },
   NOT_FOUND_LETTERS: {
     // Undetectable letters by runMRZ method
     code: 4,
-    save: '/notFound/'
+    save: 'notFound'
   }
 };
 
 var codeNames = Object.keys(codes);
-
-const runMRZ = require('../src/runMRZ');
-const IJS = require('image-js').Image;
-const loadFontFingerprint = require('../src/util/loadFontData');
-const symbols = require('../src/util/symbolClasses').MRZ; // SYMBOLS MRZ NUMBERS
-const fs = require('fs');
-const parse = require('mrz').parse;
-const tableify = require('tableify');
 
 var table = [];
 
@@ -67,33 +63,30 @@ var options = {
 
 function saveImage(images, code, filename, errorInformation = '') {
   var { img, mask, painted } = images;
-  var saveDir = rootDir + code.save;
+  var saveDir = join(rootDir, code.save);
 
   var grey = img.grey({ allowGrey: true });
 
   if (!fs.existsSync(saveDir)) {
     fs.mkdirSync(saveDir);
   }
-  fs.copyFileSync(readDirectory + filename, saveDir + filename);
+  fs.copyFileSync(join(readDirectory, filename), join(saveDir, filename));
 
-  let maskFilename = filename.replace(/\.[A-Za-z]*$/, '_mask.bmp');
+  let maskFilename = filename.replace(/\.[A-Za-z]*$/, '_mask.png');
   let paintedFilename = filename.replace(/\.[A-Za-z]*$/, '_painted.png');
 
-  mask.save(saveDir + maskFilename, {
-    useCanvas: false,
-    format: 'bmp'
-  });
-  painted.save(saveDir + paintedFilename, {
-    useCanvas: false,
-    format: 'png'
-  });
+  mask.save(join(saveDir, maskFilename));
+  painted.save(join(saveDir, paintedFilename));
 
-  //img.save(rootDir + code.save + filename);
+  //img.save(join(rootDir, code.save, filename));
   table.push({
     images: [
-      `<img src="./${code.save + filename}" width="500" height="100">`,
-      `<img src="./${code.save + maskFilename}" width="500" height="100">`,
-      `<img src="./${code.save + paintedFilename}" width="500" height="100">`
+      `<img src="./${join(code.save, filename)}" width="500" height="100">`,
+      `<img src="./${join(code.save, maskFilename)}" width="500" height="100">`,
+      `<img src="./${join(
+        code.save,
+        paintedFilename
+      )}" width="500" height="100">`
     ],
     'Error Information': errorInformation,
     'Code Error': `<font color=${code.code === 0 ? 'green' : 'red'}> ${
@@ -194,7 +187,7 @@ function isMRZCorrect(image, filename) {
 var files = fs.readdirSync(readDirectory);
 
 var fontFingerprint = loadFontFingerprint(options.fingerprintOptions);
-var promises = files.map((elem) => IJS.load(readDirectory + elem));
+var promises = files.map((elem) => IJS.load(join(readDirectory, elem)));
 
 Promise.all(promises).then(function (elems) {
   var counters = new Array(Object.keys(codes).length).fill(0);

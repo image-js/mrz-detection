@@ -10,11 +10,13 @@ const dataPath = process.argv[2];
 if (!dataPath) throw new Error('Call this like: node main.js path/to/data');
 
 const rootDir = resolve(dataPath);
+const saveDir = join(rootDir, 'data');
 const paths = {
-  rootDir: rootDir,
-  saveMask: join(rootDir, 'data', 'mask'),
-  saveMRZ: join(rootDir, 'data', 'mrz'),
-  saveHTMLFile: join(rootDir, 'data', 'index.html')
+  rootDir,
+  saveDir,
+  saveMask: join(saveDir, 'mask'),
+  saveMRZ: join(saveDir, 'mrz'),
+  saveHTMLFile: join(saveDir, 'index.html')
 };
 
 testMRZ(paths);

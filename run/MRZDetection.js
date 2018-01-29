@@ -13,26 +13,26 @@ const LettersStats = require('../src/LettersStatistics');
 const codes = {
   PREPROCESS_ERROR: {
     code: 0,
-    save: '/preprocess/'
+    save: 'preprocess'
   },
   CORRECT: {
     code: 1,
-    save: '/correct/'
+    save: 'correct'
   },
   MRZ_PARSE_ERROR: {
     // Invalid MRZ given by the parser (data that maybe doesn't have sense)
     code: 2,
-    save: '/notParse/'
+    save: 'notParse'
   },
   NO_DETECTED_TEXT: {
     // different sizes of each MRZ line
     code: 3,
-    save: '/notDetected/'
+    save: 'notDetected'
   },
   NOT_FOUND_LETTERS: {
     // Undetectable letters by runMRZ method
     code: 4,
-    save: '/notFound/'
+    save: 'notFound'
   }
 };
 
@@ -62,7 +62,7 @@ const maxSizeRoi = 800;
 const filterSize = 0.82;
 
 function getFunctions(paths) {
-  const { saveMRZ, rootDir } = paths;
+  const { saveMRZ, rootDir, saveDir } = paths;
   var lettersStats = new LettersStats(join(rootDir, 'ground.csv'));
   var checkRoi = (number) => number >= 15 && number <= 50;
 
@@ -257,34 +257,31 @@ function getFunctions(paths) {
   // functions to parse mrz
   function saveImage(images, code, filename, errorInformation = '') {
     var { img, mask, painted } = images;
-    var saveDir = rootDir + code.save;
+    var destDir = join(saveDir, code.save);
 
     var grey = img.grey({ allowGrey: true });
 
-    if (!fs.existsSync(saveDir)) {
-      fs.mkdirSync(saveDir);
+    if (!fs.existsSync(destDir)) {
+      fs.mkdirSync(destDir);
     }
 
-    let maskFilename = filename.replace(/\.[A-Za-z]*$/, '_mask.bmp');
-    let paintedFilename = filename.replace(/\.[A-Za-z]*$/, '_painted.png');
+    let maskFilename = filename.replace(/\.[^.]+$/, '_mask.png');
+    let paintedFilename = filename.replace(/\.[^.]+$/, '_painted.png');
 
-    mask.save(saveDir + maskFilename, {
-      useCanvas: false,
-      format: 'bmp'
-    });
-    painted.save(saveDir + paintedFilename, {
-      useCanvas: false,
-      format: 'png'
-    });
+    mask.save(join(destDir, maskFilename));
+    painted.save(join(destDir, paintedFilename));
 
-    //img.save(rootDir + code.save + filename);
     return {
       code: code.code,
       outputTable: {
         images: [
-          `<img src="${saveMRZ + filename}" width="500" height="100">`,
-          `<img src="${saveDir + maskFilename}" width="500" height="100">`,
-          `<img src="${saveDir + paintedFilename}" width="500" height="100">`
+          `<img src="${`mrz/${filename}`}" width="500" height="100">`,
+          `<img src="${`${
+            code.save
+          }/${maskFilename}`}" width="500" height="100">`,
+          `<img src="${`${
+            code.save
+          }/${paintedFilename}`}" width="500" height="100">`
         ],
         'Error Information': errorInformation,
         'Code Error': `<font color=${code.code === 0 ? 'green' : 'red'}> ${
