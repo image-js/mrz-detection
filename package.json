@@ -49,6 +49,7 @@
   "dependencies": {
     "mkdirp": "^0.5.1",
     "ml-distance": "^2.1.1",
+    "ml-matrix": "^5.0.1",
     "mrz": "^3.0.5",
     "ocr-tools": "^0.0.3"
   }
