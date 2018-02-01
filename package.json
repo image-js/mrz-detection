@@ -47,6 +47,7 @@
     "image-js": ">=0.16.1"
   },
   "dependencies": {
+    "minimist": "^1.2.0",
     "mkdirp": "^0.5.1",
     "ml-distance": "^2.1.1",
     "ml-matrix": "^5.0.1",
