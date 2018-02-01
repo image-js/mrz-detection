@@ -32,10 +32,13 @@ async function exec() {
 async function processFile(pathname) {
   const filename = path.basename(pathname);
   let img = await IJS.load(pathname);
+  const original = img;
+
   // const scaled = img;
   const scaled = img.scale({ width: 500 });
   // await save(scaled, 'scaled');
 
+  const originalToTreatedRatio = original.width / scaled.width;
   img = scaled.grey();
   // await save(img, 'gray');
   // is this formula used? (it is in opencv) sigma = 0.3(radius / 2 - 1) + 0.8;
@@ -109,28 +112,34 @@ async function processFile(pathname) {
     };
   });
 
-  const oldRois = rois;
-
   rois = rois.filter((roi) => checkRatio(roi.meta.ratio));
-  console.log('#rois', rois.length);
 
   masks = rois.map((roi) => roi.roi.getMask());
   if (rois.length === 0) {
     console.log('no roi found');
-    console.log(oldRois);
     return;
   }
 
   if (rois.length > 1) {
     console.log('more than one matching roi found');
     rois.sort((a, b) => b.roi.surface - a.roi.surface);
-    console.log(rois.map((roi) => roi.roi.surface));
   }
+
+  const cropped = original
+    .crop({
+      x: rois[0].roi.minX * originalToTreatedRatio,
+      y: rois[0].roi.minY * originalToTreatedRatio,
+      width: (rois[0].roi.maxX - rois[0].roi.minX) * originalToTreatedRatio,
+      height: (rois[0].roi.maxY - rois[0].roi.minY) * originalToTreatedRatio
+    })
+    .rotate(rois[0].meta.angle);
 
   scaled.paintMasks(masks, {
     distinctColor: true,
     alpha: 50
   });
+
+  await save(cropped, 'cropped');
 
   await save(scaled, 'painted');
   // img = await img.sobelFilter();
