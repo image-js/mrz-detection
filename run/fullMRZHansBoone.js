@@ -139,7 +139,7 @@ async function processFile(pathname) {
     alpha: 50
   });
 
-  await save(cropped, 'cropped');
+  await save(cropped, 'cropped', '.png');
 
   await save(scaled, 'painted');
   // img = await img.sobelFilter();
@@ -152,10 +152,13 @@ async function processFile(pathname) {
 
   // removeBorders(img);
 
-  async function save(img, suffix = '') {
-    await img.save(path.join(__dirname, `../data/${suffix}_${filename}`), {
-      format: 'jpg'
-    });
+  async function save(img, suffix = '', format) {
+    const ext = path.extname(filename);
+    let realFilename = filename;
+    if (format) {
+      realFilename = filename.replace(ext, format);
+    }
+    await img.save(path.join(__dirname, `../data/${suffix}_${realFilename}`));
   }
 }
 
