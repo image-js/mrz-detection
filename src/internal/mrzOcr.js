@@ -2,7 +2,7 @@
 
 const { getLinesFromImage, doOcrOnLines } = require('ocr-tools');
 
-module.exports = function runMRZ(image, fontFingerprint, options = {}) {
+function mrzOcr(image, fontFingerprint, options = {}) {
   let { lines, mask, painted, averageSurface } = getLinesFromImage(
     image,
     options
@@ -28,4 +28,6 @@ module.exports = function runMRZ(image, fontFingerprint, options = {}) {
     painted,
     averageSurface
   };
-};
+}
+
+module.exports = mrzOcr;

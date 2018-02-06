@@ -1,5 +1,6 @@
 'use strict';
 
 module.exports = {
-  getMrz: require('./getMrz')
+  getMrz: require('./getMrz'),
+  readMrz: require('./readMrz')
 };
