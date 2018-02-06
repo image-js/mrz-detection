@@ -11,7 +11,7 @@ const rectKernel = getRectKernel(9, 5);
 const sqKernel = getRectKernel(19, 19);
 
 function getMrz(image, options = {}) {
-  const { keepIntermediateImages: debug = false } = options;
+  const { debug = false } = options;
   const original = image;
 
   const images = {};
@@ -122,7 +122,7 @@ function getMrz(image, options = {}) {
     images.painted = painted;
   }
 
-  return debug ? images : cropped;
+  return debug ? { images } : cropped;
 }
 
 function getRectKernel(w, h) {

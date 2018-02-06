@@ -15,11 +15,11 @@ async function exec() {
   if (argv.file) {
     const pathname = path.resolve(argv.file);
     console.time(pathname);
-    const images = await getMrz(await IJS.load(pathname), {
-      keepIntermediateImages: true
+    const result = await getMrz(await IJS.load(pathname), {
+      debug: true
     });
     console.timeEnd(pathname);
-    await saveImages(pathname, images);
+    await saveImages(pathname, result.images);
   } else if (argv.dir) {
     const dirname = path.resolve(argv.dir);
     const files = fs.readdirSync(dirname).filter((f) => {
@@ -30,11 +30,11 @@ async function exec() {
       console.log(`process ${file}`);
       const imagePath = path.join(dirname, file);
       console.time(imagePath);
-      const images = getMrz(await IJS.load(imagePath), {
-        keepIntermediateImages: true
+      const result = getMrz(await IJS.load(imagePath), {
+        debug: true
       });
       console.timeEnd(imagePath);
-      await saveImages(imagePath, images);
+      await saveImages(imagePath, result.images);
     }
   }
 }
