@@ -111,7 +111,7 @@ function getMrz(image, options = {}) {
       width: (rois[0].roi.maxX - rois[0].roi.minX) * originalToTreatedRatio,
       height: (rois[0].roi.maxY - rois[0].roi.minY) * originalToTreatedRatio
     })
-    .rotate(rois[0].meta.angle);
+    .rotate(rois[0].meta.angle, { interpolation: 'bilinear' });
   if (debug) images.cropped = cropped;
 
   if (debug) {
