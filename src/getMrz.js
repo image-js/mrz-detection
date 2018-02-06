@@ -97,7 +97,6 @@ function getMrz(image, options = {}) {
     };
   });
 
-  console.log(rois);
   rois = rois.filter((roi) => checkRatio(roi.meta.ratio));
 
   masks = rois.map((roi) => roi.roi.getMask());
