@@ -1,7 +1,7 @@
 'use strict';
 
 const path = require('path');
-const fs = require('fs');
+const fs = require('fs-extra');
 const minimist = require('minimist');
 const IJS = require('image-js').Image;
 
@@ -19,13 +19,19 @@ async function exec() {
       debug: true
     });
     console.timeEnd(pathname);
-    await saveImages(pathname, result.images);
+    await saveImages(
+      pathname,
+      result.images,
+      path.join(path.dirname(pathname), 'out')
+    );
   } else if (argv.dir) {
     const dirname = path.resolve(argv.dir);
-    const files = fs.readdirSync(dirname).filter((f) => {
+    const files = (await fs.readdir(dirname)).filter((f) => {
       f = f.toLowerCase();
       return f.endsWith('jpg') || f.endsWith('png') || f.endsWith('jpeg');
     });
+    const out = path.join(dirname, 'out');
+    await fs.emptyDir(out);
     for (let file of files) {
       console.log(`process ${file}`);
       const imagePath = path.join(dirname, file);
@@ -34,23 +40,18 @@ async function exec() {
         debug: true
       });
       console.timeEnd(imagePath);
-      await saveImages(imagePath, result.images);
+      await saveImages(imagePath, result.images, out);
     }
   }
 }
 
-async function saveImages(imagePath, images) {
+async function saveImages(imagePath, images, out) {
   const filename = path.basename(imagePath);
-  const dirname = path.dirname(imagePath);
-  const out = path.join(dirname, 'out');
-  try {
-    fs.mkdirSync(out);
-  } catch (e) {
-    if (e.code !== 'EEXIST') throw e;
-  }
   const ext = path.extname(filename);
   const pngName = filename.replace(ext, '.png');
   for (const prefix in images) {
-    await images[prefix].save(path.join(out, `${prefix}_${pngName}`));
+    const kind = path.join(out, prefix);
+    await fs.ensureDir(kind);
+    await images[prefix].save(path.join(kind, pngName));
   }
 }

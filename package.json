@@ -41,6 +41,7 @@
     "tableify": "^1.1.0"
   },
   "dependencies": {
+    "fs-extra": "^5.0.0",
     "image-js": "^0.18.1",
     "minimist": "^1.2.0",
     "mkdirp": "^0.5.1",
