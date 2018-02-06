@@ -67,15 +67,17 @@ function getMrz(image, options = {}) {
   rois = rois.map((roi, idx) => {
     const b = bounding[idx];
     let dv;
-    const d1 = getDistance(b[0], b[1]);
-    const d2 = getDistance(b[1], b[2]);
-    let ratio = d1 / d2;
-    if (ratio < 1) ratio = 1 / ratio;
-    if (d1 > d2) {
-      dv = getDiffVector(b[0], b[1]);
-    } else {
+    let d1 = getDistance(b[0], b[1]);
+    let d2 = getDistance(b[1], b[2]);
+    if (d2 > d1) {
+      [d1, d2] = [d2, d1];
       dv = getDiffVector(b[1], b[2]);
+    } else {
+      dv = getDiffVector(b[0], b[1]);
     }
+
+    let ratio = d1 / d2;
+
     const horizontal = new Matrix([[1, 0]]);
     const d = Math.sqrt(
       dv.get(0, 0) * dv.get(0, 0) + dv.get(0, 1) * dv.get(0, 1)
@@ -87,12 +89,15 @@ function getMrz(image, options = {}) {
     return {
       meta: {
         angle,
-        ratio
+        ratio,
+        regionWidth: d1,
+        regionHeight: d2
       },
       roi: roi
     };
   });
 
+  console.log(rois);
   rois = rois.filter((roi) => checkRatio(roi.meta.ratio));
 
   masks = rois.map((roi) => roi.roi.getMask());
@@ -104,14 +109,27 @@ function getMrz(image, options = {}) {
     rois.sort((a, b) => b.roi.surface - a.roi.surface);
   }
 
-  const cropped = original
-    .crop({
-      x: rois[0].roi.minX * originalToTreatedRatio,
-      y: rois[0].roi.minY * originalToTreatedRatio,
-      width: (rois[0].roi.maxX - rois[0].roi.minX) * originalToTreatedRatio,
-      height: (rois[0].roi.maxY - rois[0].roi.minY) * originalToTreatedRatio
-    })
-    .rotate(rois[0].meta.angle, { interpolation: 'bilinear' });
+  let cropped = original.crop({
+    x: rois[0].roi.minX * originalToTreatedRatio,
+    y: rois[0].roi.minY * originalToTreatedRatio,
+    width: (rois[0].roi.maxX - rois[0].roi.minX) * originalToTreatedRatio,
+    height: (rois[0].roi.maxY - rois[0].roi.minY) * originalToTreatedRatio
+  });
+
+  if (Math.abs(rois[0].meta.angle) > 1) {
+    cropped = cropped.rotate(rois[0].meta.angle, { interpolation: 'bilinear' });
+    const region = {
+      x:
+        (cropped.width - rois[0].meta.regionWidth * originalToTreatedRatio) / 2,
+      y:
+        (cropped.height - rois[0].meta.regionHeight * originalToTreatedRatio) /
+        2,
+      width: Math.floor(rois[0].meta.regionWidth * originalToTreatedRatio),
+      height: Math.floor(rois[0].meta.regionHeight * originalToTreatedRatio)
+    };
+    cropped = cropped.crop(region);
+  }
+
   if (debug) images.cropped = cropped;
 
   if (debug) {
@@ -132,7 +150,7 @@ function getRectKernel(w, h) {
 }
 
 function checkRatio(ratio) {
-  return ratio > 5 && ratio < 12;
+  return ratio > 4 && ratio < 12;
 }
 
 function getDistance(p1, p2) {
