@@ -117,6 +117,7 @@ function getMrz(image, options = {}) {
 
   if (Math.abs(rois[0].meta.angle) > 1) {
     cropped = cropped.rotate(rois[0].meta.angle, { interpolation: 'bilinear' });
+    if (debug) images.rotated = cropped;
     const region = {
       x:
         (cropped.width - rois[0].meta.regionWidth * originalToTreatedRatio) / 2,
