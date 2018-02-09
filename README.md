@@ -1,36 +1,34 @@
 # mrz-detection
 
-  [![NPM version][npm-image]][npm-url]
-  [![build status][travis-image]][travis-url]
-  [![Test coverage][codecov-image]][codecov-url]
-  [![npm download][download-image]][download-url]
+## Run scripts
 
-Detect Machine Readable Zones (MRZ) in images of identity documents.
+The best way to test the run scripts is to create a `data` directory in the root of this repo and put
+the images in sub-directories of `data`.
 
-## Installation
+### getMrz
 
-`$ npm install --save mrz-detection`
+`node run/getMrz.js --dir data/imageDir`
 
-## Usage
+This script will treat all PNG or JPEG images in the specified `dir` and create an `out` sub-directory
+containing the images at each step of the process.
+The purpose of this script is to locate the MRZ and crop/rotate the image to keep only this part.
 
-```js
-import library from 'mrz-detection';
+Final images will be in `data/imageDir/out/cropped`
 
-const result = library(args);
-// result is ...
-```
+### readMrz
 
-## [API Documentation](https://image-js.github.io/mrz-detection/)
+`node run/readMrz.js --dir data/imageDir/out/cropped --reference data/imageDir/ground.csv`
+
+This script will attempt to read the MRZ of all images in the specified `dir` and compare the read
+data with the `reference`.
+
+The reference should be a CSV file with the following format:
+
+image-name,MRZ-LINE-1,MRZ-LINE-2,MRZ-LINE-3
+
+* image-name is the filename of the original image without extension
+* MRZ-LINE-x are each line of the MRZ (two or three lines)
 
 ## License
 
-  [MIT](./LICENSE)
-
-[npm-image]: https://img.shields.io/npm/v/mrz-detection.svg?style=flat-square
-[npm-url]: https://www.npmjs.com/package/mrz-detection
-[travis-image]: https://img.shields.io/travis/image-js/mrz-detection/master.svg?style=flat-square
-[travis-url]: https://travis-ci.org/image-js/mrz-detection
-[codecov-image]: https://img.shields.io/codecov/c/github/image-js/mrz-detection.svg?style=flat-square
-[codecov-url]: https://codecov.io/gh/image-js/mrz-detection
-[download-image]: https://img.shields.io/npm/dm/mrz-detection.svg?style=flat-square
-[download-url]: https://www.npmjs.com/package/mrz-detection
+[MIT](./LICENSE)
