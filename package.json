@@ -41,6 +41,7 @@
     "tableify": "^1.1.0"
   },
   "dependencies": {
+    "degrees-radians": "^1.0.3",
     "fs-extra": "^5.0.0",
     "image-js": "^0.18.1",
     "minimist": "^1.2.0",
@@ -48,6 +49,7 @@
     "ml-distance": "^2.1.1",
     "ml-matrix": "^5.0.1",
     "mrz": "^3.0.5",
-    "ocr-tools": "^0.0.3"
+    "ocr-tools": "^0.0.3",
+    "transformation-matrix": "^1.7.0"
   }
 }

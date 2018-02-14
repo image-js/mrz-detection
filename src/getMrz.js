@@ -5,7 +5,14 @@
 
 'use strict';
 
+const degreesRadians = require('degrees-radians');
 const { Matrix } = require('ml-matrix');
+const {
+  rotate,
+  translate,
+  transform,
+  applyToPoints
+} = require('transformation-matrix');
 
 const rectKernel = getRectKernel(9, 5);
 const sqKernel = getRectKernel(19, 19);
@@ -114,20 +121,58 @@ function getMrz(image, options = {}) {
     width: (rois[0].roi.maxX - rois[0].roi.minX) * originalToTreatedRatio,
     height: (rois[0].roi.maxY - rois[0].roi.minY) * originalToTreatedRatio
   });
+  if (debug) images.crop = cropped;
 
   if (Math.abs(rois[0].meta.angle) > 1) {
-    cropped = cropped.rotate(rois[0].meta.angle, { interpolation: 'bilinear' });
-    if (debug) images.rotated = cropped;
-    const region = {
-      x:
-        (cropped.width - rois[0].meta.regionWidth * originalToTreatedRatio) / 2,
-      y:
-        (cropped.height - rois[0].meta.regionHeight * originalToTreatedRatio) /
-        2,
-      width: Math.floor(rois[0].meta.regionWidth * originalToTreatedRatio),
-      height: Math.floor(rois[0].meta.regionHeight * originalToTreatedRatio)
-    };
-    cropped = cropped.crop(region);
+    const beforeRotate = cropped;
+    const hull = rois[0].roi.mask.monotoneChainConvexHull().map(([x, y]) => ({
+      x: x * originalToTreatedRatio,
+      y: y * originalToTreatedRatio
+    }));
+    const middle = { x: beforeRotate.width / 2, y: beforeRotate.height / 2 };
+    const afterRotate = beforeRotate.rotate(rois[0].meta.angle, {
+      interpolation: 'bilinear'
+    });
+    cropped = afterRotate;
+
+    if (debug) {
+      images.painted = beforeRotate.paintMasks(rois[0].roi.mask);
+      images.rotateCrop = afterRotate;
+    }
+
+    const widthDiff = (afterRotate.width - beforeRotate.width) / 2;
+    const heightDiff = (afterRotate.height - beforeRotate.height) / 2;
+
+    const transformation = transform(
+      translate(middle.x, middle.y),
+      rotate(degreesRadians(rois[0].meta.angle)),
+      translate(-middle.x, -middle.y),
+      translate(widthDiff, heightDiff)
+    );
+
+    const rotatedHull = applyToPoints(transformation, hull);
+    let minX = Infinity;
+    let minY = Infinity;
+    let maxX = -Infinity;
+    let maxY = -Infinity;
+    for (const point of rotatedHull) {
+      if (point.x < minX) minX = point.x;
+      if (point.x > maxX) maxX = point.x;
+      if (point.y < minY) minY = point.y;
+      if (point.y > maxY) maxY = point.y;
+    }
+
+    minX = Math.max(0, Math.round(minX));
+    minY = Math.max(0, Math.round(minY));
+    maxX = Math.min(Math.round(maxX), cropped.width);
+    maxY = Math.min(Math.round(maxY), cropped.height);
+
+    cropped = cropped.crop({
+      x: minX,
+      y: minY,
+      width: maxX - minX,
+      height: maxY - minY
+    });
   }
 
   if (debug) images.cropped = cropped;
