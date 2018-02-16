@@ -5,10 +5,10 @@
 
 'use strict';
 
-const degreesRadians = require('degrees-radians');
+const radiansDegrees = require('radians-degrees');
 const { Matrix } = require('ml-matrix');
 const {
-  rotate,
+  rotateDEG,
   translate,
   transform,
   applyToPoint,
@@ -16,7 +16,7 @@ const {
 } = require('transformation-matrix');
 
 const rectKernel = getRectKernel(9, 5);
-const sqKernel = getRectKernel(15, 15);
+const sqKernel = getRectKernel(19, 19);
 
 function getMrz(image, options) {
   try {
@@ -78,43 +78,35 @@ function internalGetMrz(image, options = {}) {
     // minWidth: 400
   });
 
-  var masks = rois.map((roi) => roi.getMask());
-  const bounding = masks.map((mask) => mask.minimalBoundingRectangle());
-
+  let masks = rois.map((roi) => roi.getMask());
   rois = rois.map((roi, idx) => {
-    const b = bounding[idx];
-    let dv;
-    let d1 = getDistance(b[0], b[1]);
-    let d2 = getDistance(b[1], b[2]);
+    const rect = masks[idx].minimalBoundingRectangle();
+    let d1 = getDistance(rect[0], rect[1]);
+    let d2 = getDistance(rect[1], rect[2]);
+    let ratio;
+    let pt1, pt2;
     if (d2 > d1) {
-      [d1, d2] = [d2, d1];
-      dv = getDiffVector(b[1], b[2]);
+      ratio = d2 / d1;
+      pt1 = rect[1];
+      pt2 = rect[2];
     } else {
-      dv = getDiffVector(b[0], b[1]);
+      ratio = d1 / d2;
+      pt1 = rect[0];
+      pt2 = rect[1];
     }
-    if (dv.get(0, 0) < 0) {
-      dv.set(0, 0, -dv.get(0, 0));
-      dv.set(0, 1, -dv.get(0, 1));
+    if (pt1[1] < pt2[1]) {
+      [pt1, pt2] = [pt2, pt1];
     }
 
-    let ratio = d1 / d2;
+    let angle =
+      radiansDegrees(Math.atan2(pt2[1] - pt1[1], pt2[0] - pt1[0])) % 180;
+    angle = -angle;
 
-    const horizontal = new Matrix([[1, 0]]);
-    const d = Math.sqrt(
-      dv.get(0, 0) * dv.get(0, 0) + dv.get(0, 1) * dv.get(0, 1)
-    );
-
-    let angle = 180 * Math.acos(horizontal.dot(dv) / d) / Math.PI;
-
-    if (angle > 90) {
-      angle -= 180;
-    }
+    if (angle > 90) angle -= 180;
     return {
       meta: {
         angle,
-        ratio,
-        regionWidth: d1,
-        regionHeight: d2
+        ratio
       },
       roi: roi
     };
@@ -147,18 +139,12 @@ function internalGetMrz(image, options = {}) {
   if (Math.abs(angle) > 45) {
     if (angle < 0) {
       toCrop = toCrop.rotateRight();
-      angle = -90 - angle;
-      regionTransform = transform(
-        rotate(Math.PI / 2),
-        translate(toCrop.width, 0)
-      );
+      angle += 90;
+      regionTransform = transform(translate(toCrop.width, 0), rotateDEG(90));
     } else {
       toCrop = toCrop.rotateLeft();
-      angle = 90 - angle;
-      regionTransform = transform(
-        rotate(-Math.PI / 2),
-        translate(-toCrop.height, 0)
-      );
+      angle -= 90;
+      regionTransform = transform(translate(0, toCrop.height), rotateDEG(-90));
     }
   }
   let mrzCropOptions;
@@ -197,8 +183,8 @@ function internalGetMrz(image, options = {}) {
     const heightDiff = (afterRotate.height - beforeRotate.height) / 2;
 
     const transformation = transform(
-      getRotationAround(beforeRotate, angle),
-      translate(widthDiff, heightDiff)
+      translate(widthDiff, heightDiff),
+      getRotationAround(beforeRotate, angle)
     );
 
     const rotatedHull = applyToPoints(transformation, hull);
@@ -267,7 +253,7 @@ function getRotationAround(image, angle) {
   const middle = { x: image.width / 2, y: image.height / 2 };
   return transform(
     translate(middle.x, middle.y),
-    rotate(degreesRadians(angle)),
+    rotateDEG(angle),
     translate(-middle.x, -middle.y)
   );
 }
