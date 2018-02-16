@@ -43,7 +43,7 @@
   "dependencies": {
     "degrees-radians": "^1.0.3",
     "fs-extra": "^5.0.0",
-    "image-js": "^0.19.0",
+    "image-js": "^0.19.1",
     "minimist": "^1.2.0",
     "mkdirp": "^0.5.1",
     "ml-distance": "^2.1.1",

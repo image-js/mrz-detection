@@ -3,7 +3,7 @@
 const path = require('path');
 const fs = require('fs-extra');
 const minimist = require('minimist');
-const IJS = require('image-js').Image;
+const { Image } = require('image-js');
 
 const { getMrz } = require('..');
 
@@ -17,7 +17,7 @@ async function exec() {
     console.time(pathname);
     const result = {};
     try {
-      await getMrz(await IJS.load(pathname), {
+      await getMrz(await Image.load(pathname), {
         debug: true,
         out: result
       });
@@ -50,7 +50,7 @@ async function exec() {
       console.time(imagePath);
       const result = {};
       try {
-        getMrz(await IJS.load(imagePath), {
+        getMrz(await Image.load(imagePath), {
           debug: true,
           out: result
         });
