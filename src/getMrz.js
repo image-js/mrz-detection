@@ -33,11 +33,11 @@ function internalGetMrz(image, options = {}) {
 
   const images = out;
 
-  const scaled = image.scale({ width: 500 });
-  if (debug) images.scaled = scaled;
+  const resized = image.resize({ width: 500 });
+  if (debug) images.resized = resized;
 
-  const originalToTreatedRatio = original.width / scaled.width;
-  image = scaled.grey();
+  const originalToTreatedRatio = original.width / resized.width;
+  image = resized.grey();
   if (debug) images.grey = image;
 
   image = image.gaussianFilter({ radius: 1 });
@@ -54,24 +54,24 @@ function internalGetMrz(image, options = {}) {
   image = image.rgba8().grey();
   if (debug) images.scharr = image;
 
-  image = image.closing({
+  image = image.close({
     kernel: rectKernel
   });
-  if (debug) images.closing = image;
+  if (debug) images.close = image;
 
   image = image.mask({
     algorithm: 'otsu'
   });
   if (debug) images.mask = image;
 
-  image = image.closing({ kernel: sqKernel });
-  if (debug) images.closing2 = image;
+  image = image.close({ kernel: sqKernel });
+  if (debug) images.close2 = image;
 
   image = image.erode({ iterations: 4 });
   image = image.dilate({ iterations: 8 });
   if (debug) images.erode = image;
 
-  const roiManager = scaled.getRoiManager();
+  const roiManager = resized.getRoiManager();
   roiManager.fromMask(image);
   let rois = roiManager.getRois({
     minSurface: 5000
@@ -132,7 +132,7 @@ function internalGetMrz(image, options = {}) {
   }
 
   if (debug) {
-    const painted = scaled.clone().paintMasks(masks, {
+    const painted = resized.clone().paintMasks(masks, {
       distinctColor: true,
       alpha: 50
     });
