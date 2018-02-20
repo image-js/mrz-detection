@@ -1,6 +1,5 @@
 {
   "name": "mrz-detection",
-  "private": true,
   "version": "0.1.0",
   "description": "Detect Machine Readable Zones (MRZ) in images of identity documents",
   "main": "src/index.js",
