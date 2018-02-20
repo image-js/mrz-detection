@@ -1,7 +1,8 @@
 'use strict';
 
-const { loadFontData } = require('ocr-tools');
 const { join } = require('path');
+
+const { loadFontData } = require('ocr-tools');
 
 const mrzOcr = require('./internal/mrzOcr');
 const symbols = require('./internal/symbols'); // SYMBOLS MRZ NUMBERS

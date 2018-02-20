@@ -1,8 +1,8 @@
 'use strict';
 
-const fs = require('fs-extra');
 const { join, resolve, extname } = require('path');
 
+const fs = require('fs-extra');
 const minimist = require('minimist');
 const IJS = require('image-js').Image;
 const { parse } = require('mrz');

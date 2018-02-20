@@ -1,6 +1,7 @@
 'use strict';
 
 const path = require('path');
+
 const fs = require('fs-extra');
 const minimist = require('minimist');
 const { Image } = require('image-js');

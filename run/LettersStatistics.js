@@ -1,7 +1,8 @@
 'use strict';
 
-var Papa = require('papaparse');
 var fs = require('fs');
+
+var Papa = require('papaparse');
 
 const ALPHABET = 'abcdefghijklmnopqrstuvwxyz0123456789<'.toUpperCase();
 const LINE_LENGTH = 'line length';
