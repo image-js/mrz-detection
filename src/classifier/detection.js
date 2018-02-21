@@ -1,5 +1,6 @@
 var {Image} = require('image-js');
 var fs = require('fs');
+var strokeWidthTransform = require('stroke-width-transform');
 
 async function loadModel() {
   var XGBoost = await require('ml-xgboost');
@@ -11,7 +12,7 @@ async function loadModel() {
   return model;
 }
 
-async function detect(model) {
+async function detect(model, filename) {
   const letterOptions = {
     width: 20,
     height: 27
@@ -51,7 +52,7 @@ async function detect(model) {
     breakdownRatio: 1,
   };
 
-  var testImage = await Image.load('../data/real/test1.png');
+  var testImage = await Image.load(filename);
   var rois = strokeWidthTransform(testImage);
 
   drawRois(testImage, rois);
@@ -60,7 +61,8 @@ async function detect(model) {
     masks[i] = testImage.extract(rois[i].getMask()).grey();
   }
 
-  for (i = masks.length - 1; i < masks.length; ++i) {
+  var predictions = new Array(masks.length);
+  for (i = 0; i < masks.length; ++i) {
     var newImage = masks[i];
     var mask = newImage.mask({
       algorithm: roiOptions.algorithm,
@@ -71,7 +73,14 @@ async function detect(model) {
     manager.fromMask(mask);
     var currentRois = manager.getRois(roiOptions);
 
-    // drawRois(newImage, rois1);
+    // drawRois(newImage, currentRois);
+    if(currentRois.length === 0) {
+      predictions[i] = {
+        image: mask,
+        prediction: []
+      };
+      continue;
+    }
     var toPredict = new Array(currentRois.length);
     for (var j = 0; j < currentRois.length; ++j) {
       var scaledMask = currentRois[j].getMask().scale({
@@ -80,46 +89,57 @@ async function detect(model) {
       });
       toPredict[j] = getBinaryArray(scaledMask);
     }
+    var timeLabel = `Prediction time for ${toPredict.length} ROI's`
+    console.time(timeLabel);
     var output = model.predict(toPredict);
-    console.log(output);
-    newImage.save('output.png');
+    console.timeEnd(timeLabel);
+
+    predictions[i] = {
+      image: mask,
+      prediction: output
+    };
+  }
+
+  return {
+    testImage,
+    predictions,
   }
 }
 
 function getBinaryArray(mask) {
-    var width = mask.width;
-    var height = mask.height;
-    var output = [];
-    for (var x = 0; x < height; ++x) {
-      for (var y = 0; y < width; ++y) {
-        output.push(mask.getBitXY(y, x));
-      }
+  var width = mask.width;
+  var height = mask.height;
+  var output = [];
+  for (var x = 0; x < height; ++x) {
+    for (var y = 0; y < width; ++y) {
+      output.push(mask.getBitXY(y, x));
     }
-  
-    return output;
   }
-  
-  function drawRois(image, rois) {
-    rois.forEach(function (roi) {
-      var small = roi.getMask();
-      roi.data = Array.from(small.data);
-  
-      // draw bounding boxes
-      var mask = roi.getMask();
-  
-      var mbr = mask.minimalBoundingRectangle();
-  
-      mbr = mbr.map((point) =>
-        [
-          point[0] + mask.position[0],
-          point[1] + mask.position[1]
-        ]
-      );
-      image.paintPolyline(mbr, { color: [255, 0, 0] });
-    });
-  
-    return image;
-  }
+
+  return output;
+}
+
+function drawRois(image, rois) {
+  rois.forEach(function (roi) {
+    var small = roi.getMask();
+    roi.data = Array.from(small.data);
+
+    // draw bounding boxes
+    var mask = roi.getMask();
+
+    var mbr = mask.minimalBoundingRectangle();
+
+    mbr = mbr.map((point) =>
+      [
+        point[0] + mask.position[0],
+        point[1] + mask.position[1]
+      ]
+    );
+    image.paintPolyline(mbr, { color: [255, 0, 0] });
+  });
+
+  return image;
+}
 
 module.exports = {
   loadModel,
