@@ -51,7 +51,7 @@
     "mrz": "^3.0.5",
     "ocr-tools": "^0.0.3",
     "radians-degrees": "^1.0.0",
-    "stroke-width-transform": "^1.0.1",
+    "stroke-width-transform": "^1.0.2",
     "transformation-matrix": "^1.7.0"
   }
 }

@@ -1,5 +1,6 @@
 var {Image} = require('image-js');
 var fs = require('fs');
+var path = require('path');
 var strokeWidthTransform = require('stroke-width-transform');
 
 async function loadModel() {
@@ -12,7 +13,7 @@ async function loadModel() {
   return model;
 }
 
-async function detect(model, filename) {
+async function detect(model, filename, saveDir) {
   const letterOptions = {
     width: 20,
     height: 27
@@ -21,9 +22,9 @@ async function detect(model, filename) {
   const roiOptions = {
     positive: true,
     negative: false,
-    minRatio: 0.3,
+    minRatio: 0.5,
     maxRatio: 2.0,
-    algorithm: 'otsu',
+    algorithm: 'isodata',
     randomColors: true
   };
 
@@ -53,7 +54,10 @@ async function detect(model, filename) {
   };
 
   var testImage = await Image.load(filename);
+  // getAllMethods(testImage);
+  console.time("SWT time");
   var rois = strokeWidthTransform(testImage);
+  console.timeEnd("SWT time")
 
   drawRois(testImage, rois);
   var masks = new Array(rois.length);
@@ -62,21 +66,32 @@ async function detect(model, filename) {
   }
 
   var predictions = new Array(masks.length);
+
+  
+
   for (i = 0; i < masks.length; ++i) {
     var newImage = masks[i];
-    var mask = newImage.mask({
-      algorithm: roiOptions.algorithm,
-      invert: true
-    });
+    try {
+      var mask = newImage.mask({
+        algorithm: roiOptions.algorithm,
+        invert: true
+      });
+    } catch(e) {
+      console.log("No threshold found, continue...");
+      continue;
+    }
+    
 
     var manager = newImage.getRoiManager();
     manager.fromMask(mask);
     var currentRois = manager.getRois(roiOptions);
 
-    // drawRois(newImage, currentRois);
+    drawRois(newImage, currentRois, [0, 255, 0]);
+    
+    
     if(currentRois.length === 0) {
       predictions[i] = {
-        image: mask,
+        image: newImage,
         prediction: []
       };
       continue;
@@ -95,7 +110,7 @@ async function detect(model, filename) {
     console.timeEnd(timeLabel);
 
     predictions[i] = {
-      image: mask,
+      image: newImage,
       prediction: output
     };
   }
@@ -119,7 +134,7 @@ function getBinaryArray(mask) {
   return output;
 }
 
-function drawRois(image, rois) {
+function drawRois(image, rois, color=[255, 0, 0]) {
   rois.forEach(function (roi) {
     var small = roi.getMask();
     roi.data = Array.from(small.data);
@@ -135,7 +150,7 @@ function drawRois(image, rois) {
         point[1] + mask.position[1]
       ]
     );
-    image.paintPolyline(mbr, { color: [255, 0, 0] });
+    image.paintPolyline(mbr, { color });
   });
 
   return image;
