@@ -29,34 +29,24 @@ async function detect(model, filename, saveDir) {
   };
 
   const swtOptions = {
-    interval: 2,
-    minNeighboors: 2,
-    scaleInvariant: 1,
-    direction: 0,
-    size: 1,
-    lowThreshold: 124,
-    highThresh: 204,
-    maxHeight: 300,
-    minHeight: 8,
-    minArea: 38,
-    letterOcclude: 3,
-    aspectRatio: 8,
-    stdRatio: 0.83,
-    thickRatio: 1.3,
-    heightRatio: 1.7,
-    intensityThresh: 31,
-    distanceRatio: 2.9,
-    intersectRatio: 1.3,
-    elongateRatio: 1.9,
-    letterThresh: 3,
-    breakdown: 1,
-    breakdownRatio: 1,
+    scaleInvariant: false,
+    breakdown: false,
+    size: 5,
+    aspectRatio: 5,
+    lowThresh: 100,
+    highThresh: 300,
+    heightRatio: 2,
+    distanceRatio: 4,
+    thicknessRatio: 2.0,
   };
 
-  var testImage = await Image.load(filename);
+  var testImage = (await Image.load(filename));/*.gaussianFilter({
+    radius: 2
+  });*/
   // getAllMethods(testImage);
+  console.log(`filename: ${filename}`);
   console.time("SWT time");
-  var rois = strokeWidthTransform(testImage);
+  var rois = strokeWidthTransform(testImage, swtOptions);
   console.timeEnd("SWT time")
 
   drawRois(testImage, rois);

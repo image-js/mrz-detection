@@ -30,7 +30,7 @@ async function exec() {
         
         var drawRoisPath = path.join(saveDir, `${filename}-rois.png`);
         currentTable.testImage.save(drawRoisPath);
-        currentTable.testImage = toHTMLImage(drawRoisPath, 300, 300);
+        currentTable.testImage = toHTMLImage(drawRoisPath, 600, 600);
 
         var predictions = currentTable.predictions;
         for(var j = 0; j < predictions.length; ++j) {
