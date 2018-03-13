@@ -8,7 +8,7 @@ function mrzOcr(image, fontFingerprint, options = {}) {
     options
   );
 
-  lines = lines.filter((line) => line.rois.length > 20);
+  lines = lines.filter((line) => line.rois.length > 5);
   // we should make a filter by ROI size ?
 
   // we keep maximum the last 3 lines
