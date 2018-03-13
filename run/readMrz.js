@@ -57,8 +57,18 @@ async function exec() {
         } else {
           for (let i = 0; i < result.length; i++) {
             if (result[i] !== reference[i]) {
+              const l = Math.max(reference[i].length, result[i].length);
               console.log(`line ${i + 1} does not match`);
               console.log(`expected: ${reference[i]}`);
+              let matches = '          ';
+              for (let j = 0; j < l; j++) {
+                if (result[i][j] === reference[i][j]) {
+                  matches += '-';
+                } else {
+                  matches += 'x';
+                }
+              }
+              console.log(matches);
               console.log(`got:      ${result[i]}`);
             }
           }
@@ -67,7 +77,7 @@ async function exec() {
         console.log('no reference to compare result');
       }
     } catch (e) {
-      console.log('read error', e.message);
+      console.log('read error', e.message, e.stack);
     }
   }
 }
@@ -90,6 +100,5 @@ async function getExpected() {
       // error
     }
   }
-  console.log(expected);
   return expected;
 }
