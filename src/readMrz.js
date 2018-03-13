@@ -23,17 +23,22 @@ const roiOptions = {
   // minSurface: 300,
   positive: true,
   negative: false,
+  minSurface: 40,
   minRatio: 0.3,
-  maxRatio: 2.0,
+  maxRatio: 3.0,
   algorithm: 'otsu',
   randomColors: true
 };
 
-function readMrz(image) {
-  var { ocrResult } = mrzOcr(image, fontFingerprint, {
+function readMrz(image, options) {
+  var { ocrResult, mask } = mrzOcr(image, fontFingerprint, {
     roiOptions,
     fingerprintOptions
   });
+
+  if (options.saveName) {
+    mask.save(options.saveName);
+  }
 
   return ocrResult.lines.map((line) => line.text);
 }

@@ -27,7 +27,9 @@ async function exec() {
     });
 
     for (let file of files) {
-      console.log('----------------------------------------------------------');
+      console.log(
+        '----------------------------------------------------------'.repeat(2)
+      );
       console.log(`process ${file}`);
       const imagePath = join(dirname, file);
       await processFile(imagePath);
@@ -35,8 +37,10 @@ async function exec() {
   }
   async function processFile(imagePath) {
     try {
+      const parsedPath = parsePath(imagePath);
       const result = readMrz(await IJS.load(imagePath), {
-        debug: true
+        debug: true,
+        saveName: join(parsedPath.dir, '../multiMask/', parsedPath.base)
       });
       console.log(result);
       const parsed = parse(result);
@@ -45,7 +49,6 @@ async function exec() {
         console.log(parsed.details.filter((d) => !d.valid).map((d) => d.error));
       }
       console.log(imagePath);
-      const parsedPath = parsePath(imagePath);
       const nameWithoutExt = parsedPath.base.replace(parsedPath.ext, '');
       console.log(nameWithoutExt);
       if (expected[nameWithoutExt]) {
