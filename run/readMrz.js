@@ -13,6 +13,12 @@ const argv = minimist(process.argv.slice(2));
 
 exec().catch(console.error);
 
+const stats = {
+  total: 0,
+  valid: 0,
+  couldParse: 0
+};
+
 async function exec() {
   const expected = await getExpected();
 
@@ -35,8 +41,10 @@ async function exec() {
       await processFile(imagePath);
     }
   }
+  console.log(stats);
   async function processFile(imagePath) {
     try {
+      stats.total += 1;
       const parsedPath = parsePath(imagePath);
       const result = readMrz(await IJS.load(imagePath), {
         debug: true,
@@ -44,9 +52,12 @@ async function exec() {
       });
       console.log(result);
       const parsed = parse(result);
+      stats.couldParse += 1;
       console.log('valid', parsed.valid);
       if (!parsed.valid) {
         console.log(parsed.details.filter((d) => !d.valid).map((d) => d.error));
+      } else {
+        stats.valid += 1;
       }
       console.log(imagePath);
       const nameWithoutExt = parsedPath.base.replace(parsedPath.ext, '');
