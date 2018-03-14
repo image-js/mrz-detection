@@ -7,6 +7,7 @@ const hog = require('hog-features');
 const SVM = require('libsvm-js/asm');
 const Kernel = require('ml-kernel');
 const range = require('lodash.range');
+const groupBy = require('lodash.groupby');
 
 let SVMOptions = {
   type: SVM.SVM_TYPES.C_SVC,
@@ -16,7 +17,7 @@ let SVMOptions = {
 
 let optionsHog = {
   cellSize: 4,
-  blockSize: 1,
+  blockSize: 2,
   blockStride: 1,
   bins: 4,
   norm: 'L2'
@@ -33,8 +34,10 @@ async function loadData() {
     for (let file of files) {
       const filepath = path.join(dir, letter, file);
       let image = await IJS.load(filepath);
-      image = image.scale({ width: 18, height: 18 });
+      const height = image.height;
+      image = image.scale({ width: 28, height: 28 });
       var descriptor = hog.extractHOG(image, optionsHog);
+      //   var descriptor = Array.from(image.data);
       const m = /(\d+-.+)-(\d+)-(\d+)/.exec(file);
       const element = {
         name: m[1],
@@ -43,10 +46,28 @@ async function loadData() {
         image,
         char: letter,
         charCode: letter.charCodeAt(0),
-        descriptor
+        descriptor,
+        height
       };
 
       data.push(element);
+    }
+  }
+  const groupedData = groupBy(data, (d) => d.name);
+  for (let name in groupedData) {
+    const maxHeight = Math.max.apply(
+      null,
+      groupedData[name].map((d) => d.height)
+    );
+    const minHeight = Math.min.apply(
+      null,
+      groupedData[name].map((d) => d.height)
+    );
+    for (let d of groupedData[name]) {
+      // This last descriptor is very important to differentiate numbers and letters
+      // Because with OCR-B font, numbers are slightly higher than numbers
+      if (minHeight === maxHeight) d.descriptor.push(1);
+      else d.descriptor.push((d.height - minHeight) / (maxHeight - minHeight));
     }
   }
   return data;
@@ -87,11 +108,13 @@ function classify(data, options) {
 function error(predicted, expected) {
   let misclassifications = 0;
   for (var index = 0; index < predicted.length; index++) {
-    // console.log(
-    //   `${index} => expected : ${expected[index]} and predicted : ${
-    //     predicted[index]
-    //   }`
-    // );
+    if (expected[index] !== predicted[index]) {
+      console.log(
+        `${index} => expected : ${String.fromCharCode(
+          expected[index]
+        )} and predicted : ${String.fromCharCode(predicted[index])}`
+      );
+    }
     if (parseInt(predicted[index]) !== parseInt(expected[index])) {
       misclassifications++;
     }
