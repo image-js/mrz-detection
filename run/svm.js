@@ -49,7 +49,6 @@ async function loadData() {
         descriptor,
         height
       };
-
       data.push(element);
     }
   }
@@ -124,6 +123,8 @@ function error(predicted, expected) {
 
 async function exec() {
   const data = await loadData();
+  console.log('total data size', data.length);
+
   // get distinct data sets
 
   const names = new Set();
