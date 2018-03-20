@@ -4,7 +4,8 @@
   "description": "Detect Machine Readable Zones (MRZ) in images of identity documents",
   "main": "src/index.js",
   "files": [
-    "src"
+    "src",
+    "fontData/12x12/mrz/orcb.json"
   ],
   "scripts": {
     "eslint": "eslint src run",
