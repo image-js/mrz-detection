@@ -53,7 +53,7 @@
     "ml-kernel": "^2.3.4",
     "ml-matrix": "^5.0.1",
     "mrz": "^3.1.0",
-    "ocr-tools": "^0.0.4",
+    "ocr-tools": "^0.0.5",
     "radians-degrees": "^1.0.0",
     "transformation-matrix": "^1.7.0"
   }
