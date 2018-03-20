@@ -46,9 +46,7 @@ async function exec() {
           algorithm: 'otsu',
           randomColors: true
         },
-        fingerprintOptions: {
-          size: 24
-        }
+        fingerprintOptions: {}
       });
 
       const name = parsedPath.base.replace(parsedPath.ext, '');

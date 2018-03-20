@@ -46,7 +46,7 @@ async function exec() {
     try {
       stats.total += 1;
       const parsedPath = parsePath(imagePath);
-      const result = readMrz(await IJS.load(imagePath), {
+      const result = await readMrz(await IJS.load(imagePath), {
         debug: true,
         saveName: join(parsedPath.dir, '../multiMask/', parsedPath.base)
       });
