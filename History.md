@@ -1,3 +1,8 @@
+<a name="0.2.0"></a>
+# [0.2.0](https://github.com/image-js/mrz-detection/compare/v0.1.2...v0.2.0) (2018-03-20)
+
+
+
 <a name="0.1.2"></a>
 ## [0.1.2](https://github.com/image-js/mrz-detection/compare/v0.1.1...v0.1.2) (2018-02-20)
 
