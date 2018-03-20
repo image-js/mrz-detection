@@ -2,7 +2,7 @@
 const fs = require('fs-extra');
 const path = require('path');
 const hog = require('hog-features');
-const SVMPromise = require('libsvm-js/wasm');
+const SVMPromise = Promise.resolve(require('libsvm-js/asm'));
 const Kernel = require('ml-kernel');
 const range = require('lodash.range');
 
@@ -26,10 +26,8 @@ function extractHOG(image) {
 // Get descriptors for images from 1 identity card
 function getDescriptors(images) {
   const result = [];
-  let count = 0;
   for (let image of images) {
     result.push(extractHOG(image));
-    image.save(`data/debug/${++count}.png`);
   }
 
   const heights = images.map((img) => img.height);
