@@ -9,6 +9,10 @@ const SVMPromise = require('libsvm-js/wasm');
 const Kernel = require('ml-kernel');
 const range = require('lodash.range');
 const groupBy = require('lodash.groupby');
+const minimist = require('minimist');
+
+const argv = minimist(process.argv.slice(2));
+const kernel = new Kernel('linear');
 
 let optionsHog = {
   cellSize: 4,
@@ -17,10 +21,62 @@ let optionsHog = {
   bins: 4,
   norm: 'L2'
 };
+
 let SVM;
-async function loadData() {
-  SVM = await SVMPromise;
-  const dir = path.join(__dirname, '../data/characters');
+function train(letters) {
+  let SVMOptions = {
+    type: SVM.SVM_TYPES.C_SVC,
+    kernel: SVM.KERNEL_TYPES.PRECOMPUTED,
+    quiet: true
+  };
+
+  const Xtrain = letters.map((s) => s.descriptor);
+  const Ytrain = letters.map((s) => s.charCode);
+
+  var classifier = new SVM(SVMOptions);
+
+  const KData = kernel
+    .compute(Xtrain)
+    .addColumn(0, range(1, Ytrain.length + 1));
+  classifier.train(KData, Ytrain);
+  return { classifier, descriptors: Xtrain };
+}
+
+function getFilePath(dir, name) {
+  const dataDir = path.join(__dirname, '../data');
+  const fileBase = path.join(dataDir, name);
+  return {
+    descriptors: `${fileBase}.svm.descriptors`,
+    model: `${fileBase}.svm.model`
+  };
+}
+
+async function createModel(dir, name) {
+  const { descriptors: descriptorsPath, model: modelPath } = getFilePath(
+    dir,
+    name
+  );
+  const letters = await loadData(dir);
+  const { descriptors, classifier } = train(letters);
+  await fs.writeFile(descriptorsPath, JSON.stringify(descriptors));
+  await fs.writeFile(modelPath, classifier.serializeModel());
+}
+
+async function applyModel(dir, name) {
+  const { descriptors: descriptorsPath, model: modelPath } = getFilePath(
+    dir,
+    name
+  );
+  const descriptors = JSON.parse(await fs.readFile(descriptorsPath, 'utf-8'));
+  const model = await fs.readFile(modelPath, 'utf-8');
+  const letters = await loadData(dir);
+  const classifier = SVM.load(model);
+  const prediction = predict(classifier, descriptors, letters);
+  printPrediction(letters, prediction);
+}
+
+async function loadData(dir) {
+  dir = path.resolve(path.join(__dirname, '..'), dir);
   const letters = await fs.readdir(dir);
   const data = [];
   // eslint-disable-next-line no-await-in-loop
@@ -68,46 +124,35 @@ async function loadData() {
   return data;
 }
 
+function predict(classifier, Xtrain, letters) {
+  const Xtest = letters.map((l) => l.descriptor);
+  const Ktest = kernel
+    .compute(Xtest, Xtrain)
+    .addColumn(0, range(1, Xtest.length + 1));
+  const result = classifier.predict(Ktest);
+  return result;
+}
+
 function classify(data, options) {
-  let SVMOptions = {
-    type: SVM.SVM_TYPES.C_SVC,
-    kernel: SVM.KERNEL_TYPES.PRECOMPUTED,
-    quiet: true
-  };
   console.log(('test set: ', options.testName));
   const testSet = data.filter((d) => d.name === options.testName);
   const trainSet = data.filter((d) => d.name !== options.testName);
 
-  const Xtrain = trainSet.map((s) => s.descriptor);
-  const Ytrain = trainSet.map((s) => s.charCode);
-  const Xtest = testSet.map((s) => s.descriptor);
-  const Ytest = testSet.map((s) => s.charCode);
+  const { classifier, descriptors } = train(trainSet);
+  const prediction = predict(classifier, descriptors, testSet);
+  printPrediction(testSet, prediction);
+}
 
-  var classifier = new SVM(SVMOptions);
-
-  const kernel = new Kernel('linear');
-  const KData = kernel
-    .compute(Xtrain)
-    .addColumn(0, range(1, Ytrain.length + 1));
-  const Ktest = kernel
-    .compute(Xtest, Xtrain)
-    .addColumn(0, range(1, Xtest.length + 1));
-
-  classifier.train(KData, Ytrain);
-  const model = classifier.serializeModel();
-  const result = classifier.predict(Ktest);
-  const testSetLength = Xtest.length;
-  const predictionError = error(result, Ytest);
-  const accuracy =
-    (parseFloat(testSetLength) - parseFloat(predictionError)) /
-    parseFloat(testSetLength) *
-    100;
-  console.log(`Test Set Size = ${testSetLength} and accuracy ${accuracy}%`);
-  return { model, kernel: KData };
+function printPrediction(letters, predicted) {
+  const expected = letters.map((l) => l.charCode);
+  error(predicted, expected);
 }
 
 function error(predicted, expected) {
-  let misclassifications = 0;
+  if (predicted.length !== expected.length) {
+    throw new Error('predicted and expected should have the same size');
+  }
+  let correct = 0;
   for (var index = 0; index < predicted.length; index++) {
     if (expected[index] !== predicted[index]) {
       console.log(
@@ -116,15 +161,22 @@ function error(predicted, expected) {
         )} and predicted : ${String.fromCharCode(predicted[index])}`
       );
     }
-    if (parseInt(predicted[index]) !== parseInt(expected[index])) {
-      misclassifications++;
+    if (parseInt(predicted[index]) === parseInt(expected[index])) {
+      correct++;
     }
   }
-  return misclassifications;
+  console.log(
+    `${correct}/${predicted.length} ( ${(
+      correct /
+      predicted.length *
+      100
+    ).toFixed(2)}% )`
+  );
+  return correct;
 }
 
-async function exec() {
-  const data = await loadData();
+async function crossValidation(dir) {
+  const data = await loadData(dir);
   console.log('total data size', data.length);
 
   // get distinct data sets
@@ -133,13 +185,28 @@ async function exec() {
   data.forEach((d) => names.add(d.name));
   //eslint-disable-next-line no-await-in-loop
   for (let name of names) {
-    const { model, kernel } = classify(data, {
+    classify(data, {
       testName: name
     });
+  }
+}
 
-    // Save model and kernel
-    await fs.writeFile('svm.model', model);
-    await fs.writeFile('data.kernel', JSON.stringify(kernel));
+async function exec() {
+  SVM = await SVMPromise;
+  if (!argv.dir) {
+    throw new Error('dir argument is mandatory');
+  }
+  if (argv.cv) {
+    crossValidation(argv.dir);
+  } else if (argv.saveModel || argv.applyModel) {
+    if (!argv.modelName) {
+      throw new Error('model name required');
+    }
+    if (argv.saveModel) {
+      createModel(argv.dir, argv.modelName);
+    } else {
+      applyModel(argv.dir, argv.modelName);
+    }
   }
 }
 
