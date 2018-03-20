@@ -30,7 +30,7 @@ const roiOptions = {
   randomColors: true
 };
 
-async function readMrz(image, options) {
+async function readMrz(image, options = {}) {
   var { ocrResult, mask } = await mrzOcr(image, fontFingerprint, {
     method: 'svm',
     roiOptions,
