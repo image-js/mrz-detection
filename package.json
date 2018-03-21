@@ -42,6 +42,7 @@
     "tableify": "^1.1.0"
   },
   "dependencies": {
+    "bson": "^2.0.4",
     "fs-extra": "^5.0.0",
     "hog-features": "^0.1.0",
     "image-js": "^0.20.0",

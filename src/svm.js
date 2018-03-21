@@ -5,6 +5,7 @@ const hog = require('hog-features');
 const SVMPromise = Promise.resolve(require('libsvm-js/asm'));
 const Kernel = require('ml-kernel');
 const range = require('lodash.range');
+const BSON = require('bson');
 
 const kernel = new Kernel('linear');
 
@@ -52,7 +53,9 @@ function predictImages(images, modelName) {
 async function applyModel(name, Xtest) {
   await loadSVM();
   const { descriptors: descriptorsPath, model: modelPath } = getFilePath(name);
-  const Xtrain = JSON.parse(await fs.readFile(descriptorsPath, 'utf-8'));
+  const bson = new BSON();
+  const Xtrain = bson.deserialize(await fs.readFile(descriptorsPath))
+    .descriptors;
   const model = await fs.readFile(modelPath, 'utf-8');
   const classifier = SVM.load(model);
   const prediction = predict(classifier, Xtrain, Xtest);
@@ -62,7 +65,8 @@ async function applyModel(name, Xtest) {
 async function createModel(letters, name) {
   const { descriptors: descriptorsPath, model: modelPath } = getFilePath(name);
   const { descriptors, classifier } = await train(letters);
-  await fs.writeFile(descriptorsPath, JSON.stringify(descriptors));
+  const bson = new BSON();
+  await fs.writeFile(descriptorsPath, bson.serialize({ descriptors }));
   await fs.writeFile(modelPath, classifier.serializeModel());
 }
 
