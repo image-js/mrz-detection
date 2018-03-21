@@ -1,1 +1,2 @@
 extends: cheminfo
+parser: babel-eslint
