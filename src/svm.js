@@ -12,11 +12,11 @@ const kernel = new Kernel('linear');
 let SVM;
 
 function extractHOG(image) {
-  image = image.scale({ width: 28, height: 28 });
+  image = image.scale({ width: 18, height: 18 });
 
   let optionsHog = {
     cellSize: 4,
-    blockSize: 2,
+    blockSize: 1,
     blockStride: 1,
     bins: 4,
     norm: 'L2'
@@ -99,7 +99,7 @@ async function train(letters) {
 }
 
 function getFilePath(name) {
-  const dataDir = path.join(__dirname, '../data');
+  const dataDir = path.join(__dirname, '../models');
   const fileBase = path.join(dataDir, name);
   return {
     descriptors: `${fileBase}.svm.descriptors`,

@@ -11,8 +11,19 @@ const argv = minimist(process.argv.slice(2));
 exec().catch(console.error);
 
 async function exec() {
+  let outDir;
   const expected = await getExpected();
 
+  if (!argv.outDir) {
+    throw new Error('you must specify an output director with --outDir');
+  } else {
+    outDir = resolve(argv.outDir);
+    await fs.mkdirp(outDir);
+    const dirList = await fs.readdir(outDir);
+    if (dirList.length !== 0) {
+      throw new Error('The output directory must be empty');
+    }
+  }
   if (argv.file) {
     const pathname = resolve(argv.file);
     await processFile(pathname);
@@ -33,6 +44,7 @@ async function exec() {
     }
   }
   async function processFile(imagePath) {
+    let shouldAdd = getCharacterCounter(argv.maxCount);
     try {
       const parsedPath = parsePath(imagePath);
       const image = await IJS.load(imagePath);
@@ -53,9 +65,12 @@ async function exec() {
       if (matchesExpected(name, result.lines)) {
         for (let i = 0; i < result.lines.length; i++) {
           const line = result.lines[i];
+          // eslint-disable-next-line no-await-in-loop
           for (let j = 0; j < line.rois.length; j++) {
+            const char = expected[name][i][j];
+            if (!shouldAdd(char)) continue;
             const roi = line.rois[j];
-            const folder = join('data/characters', expected[name][i][j]);
+            const folder = join(outDir, char);
             const fileName = `${name}-${i}-${j}.png`;
             fs.mkdirpSync(folder);
             const img = image.crop({
@@ -71,6 +86,21 @@ async function exec() {
     } catch (e) {
       console.log('error', e);
     }
+  }
+
+  function getCharacterCounter(max = 4) {
+    max = +max;
+    const count = {};
+    return function (char) {
+      if (!count[char]) {
+        count[char] = 1;
+        return true;
+      } else {
+        count[char]++;
+        if (count[char] > max) return false;
+      }
+      return true;
+    };
   }
 
   function matchesExpected(name, lines) {
