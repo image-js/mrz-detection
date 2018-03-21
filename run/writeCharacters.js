@@ -52,7 +52,7 @@ async function exec() {
         roiOptions: {
           positive: true,
           negative: false,
-          minSurface: 40,
+          minSurface: 20,
           minRatio: 0.3,
           maxRatio: 3.0,
           algorithm: 'otsu',
@@ -63,6 +63,7 @@ async function exec() {
 
       const name = parsedPath.base.replace(parsedPath.ext, '');
       if (matchesExpected(name, result.lines)) {
+        console.log('looks good, write chars');
         for (let i = 0; i < result.lines.length; i++) {
           const line = result.lines[i];
           // eslint-disable-next-line no-await-in-loop
