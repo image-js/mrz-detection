@@ -7,6 +7,8 @@ const fs = require('fs-extra');
 const minimist = require('minimist');
 const IJS = require('image-js').Image;
 
+const roiOptions = require('../src/roiOptions');
+
 const argv = minimist(process.argv.slice(2));
 
 exec().catch(console.error);
@@ -50,21 +52,14 @@ async function exec() {
       const parsedPath = parsePath(imagePath);
       const image = await IJS.load(imagePath);
       const result = getLinesFromImage(image, {
-        roiOptions: {
-          positive: true,
-          negative: false,
-          minSurface: 20,
-          minRatio: 0.3,
-          maxRatio: 3.0,
-          algorithm: 'otsu',
-          randomColors: true
-        },
+        roiOptions,
         fingerprintOptions: {}
       });
 
       const name = parsedPath.base.replace(parsedPath.ext, '');
       if (matchesExpected(name, result.lines)) {
         console.log('looks good, write chars');
+
         for (let i = 0; i < result.lines.length; i++) {
           const line = result.lines[i];
           // eslint-disable-next-line no-await-in-loop

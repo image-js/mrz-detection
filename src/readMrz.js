@@ -6,6 +6,7 @@ const { loadFontData } = require('ocr-tools');
 
 const mrzOcr = require('./internal/mrzOcr');
 const symbols = require('./internal/symbols'); // SYMBOLS MRZ NUMBERS
+const roiOptions = require('./roiOptions');
 
 const fingerprintOptions = {
   baseDir: join(__dirname, '../fontData'),
@@ -18,17 +19,6 @@ const fingerprintOptions = {
 };
 
 const fontFingerprint = loadFontData(fingerprintOptions);
-
-const roiOptions = {
-  // minSurface: 300,
-  positive: true,
-  negative: false,
-  minSurface: 20,
-  minRatio: 0.3,
-  maxRatio: 3.0,
-  algorithm: 'otsu',
-  randomColors: true
-};
 
 async function readMrz(image, options = {}) {
   var { ocrResult, mask } = await mrzOcr(image, fontFingerprint, {
