@@ -1,3 +1,13 @@
+<a name="0.3.1"></a>
+## [0.3.1](https://github.com/image-js/mrz-detection/compare/v0.3.0...v0.3.1) (2018-03-21)
+
+
+### Bug Fixes
+
+* add models to npm files ([21d0b25](https://github.com/image-js/mrz-detection/commit/21d0b25))
+
+
+
 <a name="0.3.0"></a>
 # [0.3.0](https://github.com/image-js/mrz-detection/compare/v0.2.2...v0.3.0) (2018-03-21)
 
