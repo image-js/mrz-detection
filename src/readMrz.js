@@ -23,7 +23,7 @@ const roiOptions = {
   // minSurface: 300,
   positive: true,
   negative: false,
-  minSurface: 40,
+  minSurface: 20,
   minRatio: 0.3,
   maxRatio: 3.0,
   algorithm: 'otsu',
