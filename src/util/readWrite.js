@@ -6,12 +6,10 @@ const IJS = require('image-js').Image;
 
 const extensions = ['.png', '.jpeg', '.jpg'];
 
-async function loadImages(dir) {
-  const images = await readImages(dir);
-  return images;
-}
-
 async function writeImages(images) {
+  if (!Array.isArray(images)) {
+    images = [images];
+  }
   // eslint-disable-next-line no-await-in-loop
   for (let entry of images) {
     const { image, filePath, ...metadata } = entry;
@@ -46,7 +44,9 @@ async function readImages(dir) {
       }
       const image = await IJS.load(filePath);
       try {
-        metadata = await fs.readJson(path.join(dir, file.replace(ext, 'json')));
+        metadata = await fs.readJson(
+          path.join(dir, file.replace(ext, '.json'))
+        );
       } catch (e) {
         metadata = {};
         console.log(`no metadata associated to ${filePath} found`);
@@ -68,6 +68,6 @@ async function readImages(dir) {
 }
 
 module.exports = {
-  loadImages,
+  readImages,
   writeImages
 };

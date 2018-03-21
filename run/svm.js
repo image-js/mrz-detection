@@ -1,9 +1,7 @@
 // Runs a cross validation leaving all characters from an identity card out
 'use strict';
 
-const fs = require('fs-extra');
 const path = require('path');
-const IJS = require('image-js').Image;
 const groupBy = require('lodash.groupby');
 const minimist = require('minimist');
 const {
@@ -13,41 +11,25 @@ const {
   train,
   extractHOG
 } = require('../src/svm');
+const { readImages } = require('../src/util/readWrite');
 
 const argv = minimist(process.argv.slice(2));
 
 async function loadData(dir) {
   dir = path.resolve(path.join(__dirname, '..'), dir);
-  const letters = await fs.readdir(dir);
-  const data = [];
-  // eslint-disable-next-line no-await-in-loop
-  for (let letter of letters) {
-    const files = await fs.readdir(path.join(dir, letter));
-    // eslint-disable-next-line no-await-in-loop
-    for (let file of files) {
-      const filepath = path.join(dir, letter, file);
-      let image = await IJS.load(filepath);
-      const height = image.height;
-      const descriptor = extractHOG(image);
-      const m = /(\d+-.+)-(\d+)-(\d+)/.exec(file);
-      const element = {
-        name: m[1],
-        linePosition: +m[2],
-        charPosition: +m[3],
-        char: letter,
-        charCode: letter.charCodeAt(0),
-        descriptor,
-        height
-      };
-      data.push(element);
-    }
+  const data = await readImages(dir);
+  for (let entry of data) {
+    let { image } = entry;
+    entry.descriptor = extractHOG(image);
+    entry.height = image.height;
   }
-  const groupedData = groupBy(data, (d) => d.name);
-  for (let name in groupedData) {
-    const heights = groupedData[name].map((d) => d.height);
+
+  const groupedData = groupBy(data, (d) => d.card);
+  for (let card in groupedData) {
+    const heights = groupedData[card].map((d) => d.height);
     const maxHeight = Math.max.apply(null, heights);
     const minHeight = Math.min.apply(null, heights);
-    for (let d of groupedData[name]) {
+    for (let d of groupedData[card]) {
       // This last descriptor is very important to differentiate numbers and letters
       // Because with OCR-B font, numbers are slightly higher than numbers
       let bonusFeature = 1;
@@ -61,9 +43,8 @@ async function loadData(dir) {
 }
 
 async function classify(data, options) {
-  console.log(('test set: ', options.testName));
-  const testSet = data.filter((d) => d.name === options.testName);
-  const trainSet = data.filter((d) => d.name !== options.testName);
+  const testSet = data.filter((d) => d.card === options.testCard);
+  const trainSet = data.filter((d) => d.card !== options.testCard);
 
   const { classifier, descriptors } = await train(trainSet);
   const prediction = predict(
@@ -111,12 +92,13 @@ async function crossValidation(data) {
 
   // get distinct data sets
 
-  const names = new Set();
-  data.forEach((d) => names.add(d.name));
+  const cards = new Set();
+  data.forEach((d) => cards.add(d.card));
   //eslint-disable-next-line no-await-in-loop
-  for (let name of names) {
+  for (let card of cards) {
+    console.log(card);
     await classify(data, {
-      testName: name
+      testCard: card
     });
   }
 }

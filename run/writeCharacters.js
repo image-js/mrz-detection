@@ -1,6 +1,7 @@
 'use strict';
 
 const { join, resolve, extname, parse: parsePath } = require('path');
+const { writeImages } = require('../src/util/readWrite');
 const { getLinesFromImage } = require('ocr-tools');
 const fs = require('fs-extra');
 const minimist = require('minimist');
@@ -80,7 +81,14 @@ async function exec() {
               width: roi.width,
               height: roi.height
             });
-            await img.save(join(folder, fileName));
+            await writeImages({
+              image: img,
+              filePath: join(folder, fileName),
+              generated: false,
+              char,
+              charCode: char.charCodeAt(0),
+              card: name
+            });
           }
         }
       }
