@@ -5,7 +5,8 @@
   "main": "src/index.js",
   "files": [
     "src",
-    "fontData/12x12/mrz/ocrb.json"
+    "fontData/12x12/mrz/ocrb.json",
+    "models"
   ],
   "scripts": {
     "eslint": "eslint src run",
