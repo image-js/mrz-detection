@@ -74,8 +74,7 @@ function predict(classifier, Xtrain, Xtest) {
   const Ktest = kernel
     .compute(Xtest, Xtrain)
     .addColumn(0, range(1, Xtest.length + 1));
-  const result = classifier.predict(Ktest);
-  return result.map((p) => String.fromCharCode(p));
+  return classifier.predict(Ktest);
 }
 
 async function train(letters) {
@@ -87,7 +86,7 @@ async function train(letters) {
   };
 
   const Xtrain = letters.map((s) => s.descriptor);
-  const Ytrain = letters.map((s) => s.charCode);
+  const Ytrain = letters.map((s) => s.code);
 
   var classifier = new SVM(SVMOptions);
 

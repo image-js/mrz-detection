@@ -81,7 +81,7 @@ async function exec() {
               filePath: join(folder, fileName),
               generated: false,
               char,
-              charCode: char.charCodeAt(0),
+              code: char.charCodeAt(0),
               card: name
             });
           }

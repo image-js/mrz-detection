@@ -28,13 +28,18 @@ async function generate() {
       fontSize: 24
     }
   });
+  await image.save('data/alph.png');
   const { lines } = getLinesFromImage(image, {
-    roiOptions,
+    roiOptions: Object.assign({}, roiOptions, {
+      minRatio: undefined,
+      maxRatio: undefined
+    }),
     fingerprintOptions: {
       width: 18,
       height: 18
     }
   });
+  console.log(lines.length);
   let count = 0;
   for (let line of lines) {
     // eslint-disable-next-line no-await-in-loop
@@ -49,7 +54,8 @@ async function generate() {
         filePath: path.join(outDir, `${chars[count]}-${count}.png`),
         image: img,
         generated: true,
-        char: chars[count]
+        char: chars[count],
+        code: chars[count].charCodeAt(0)
       });
       count++;
     }

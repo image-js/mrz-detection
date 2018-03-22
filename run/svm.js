@@ -51,7 +51,7 @@ async function classify(data, options) {
     classifier,
     descriptors,
     testSet.map((l) => l.descriptor)
-  );
+  ).map(String.fromCharCode);
   printPrediction(testSet, prediction);
 }
 
@@ -118,10 +118,11 @@ async function exec() {
       const data = await loadData(argv.dir);
       await createModel(data, argv.modelName);
     } else {
-      const predicted = await applyModel(
+      let predicted = await applyModel(
         argv.modelName,
         data.map((l) => l.descriptor)
       );
+      predicted = predicted.map((p) => String.fromCharCode(p));
       printPrediction(data, predicted);
     }
   }
