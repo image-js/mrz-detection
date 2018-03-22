@@ -22,11 +22,10 @@ async function generate() {
   if (files.length > 0) throw new Error('outDir must be emtpy');
 
   const { image, chars } = await generateSymbolImage({
-    imageOptions: {
-      allowedRotation: 2,
-      numberPerLine: 3,
-      fontSize: 24
-    }
+    allowedRotation: 2,
+    numberPerLine: 3,
+    fontSize: 48,
+    fontName: 'ocrb'
   });
   await image.save('data/alph.png');
   const { lines } = getLinesFromImage(image, {
