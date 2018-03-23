@@ -1,11 +1,13 @@
 'use strict';
 
 const { join, resolve, extname, parse: parsePath } = require('path');
-const { writeImages } = require('../src/util/readWrite');
+
 const { getLinesFromImage } = require('ocr-tools');
 const fs = require('fs-extra');
 const minimist = require('minimist');
 const IJS = require('image-js').Image;
+
+const { writeImages } = require('../src/util/readWrite');
 
 const argv = minimist(process.argv.slice(2));
 

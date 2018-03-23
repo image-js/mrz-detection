@@ -1,6 +1,7 @@
 'use strict';
-const fs = require('fs-extra');
 const path = require('path');
+
+const fs = require('fs-extra');
 const hog = require('hog-features');
 const SVMPromise = Promise.resolve(require('libsvm-js/asm'));
 const Kernel = require('ml-kernel');

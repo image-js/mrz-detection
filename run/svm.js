@@ -2,8 +2,10 @@
 'use strict';
 
 const path = require('path');
+
 const groupBy = require('lodash.groupby');
 const minimist = require('minimist');
+
 const {
   createModel,
   applyModel,
@@ -94,9 +96,9 @@ async function crossValidation(data) {
 
   const cards = new Set();
   data.forEach((d) => cards.add(d.card));
-  //eslint-disable-next-line no-await-in-loop
   for (let card of cards) {
     console.log(card);
+    // eslint-disable-next-line no-await-in-loop
     await classify(data, {
       testCard: card
     });

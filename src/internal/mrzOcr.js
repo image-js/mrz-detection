@@ -1,6 +1,7 @@
 'use strict';
 
 const { getLinesFromImage, doOcrOnLines } = require('ocr-tools');
+
 const { predictImages } = require('../svm');
 
 async function mrzOcr(image, fontFingerprint, options = {}) {

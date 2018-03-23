@@ -1,7 +1,8 @@
 'use strict';
 
-const fs = require('fs-extra');
 const path = require('path');
+
+const fs = require('fs-extra');
 const IJS = require('image-js').Image;
 
 const extensions = ['.png', '.jpeg', '.jpg'];
@@ -49,6 +50,7 @@ async function readImages(dir) {
         );
       } catch (e) {
         metadata = {};
+        // eslint-disable-next-line no-console
         console.log(`no metadata associated to ${filePath} found`);
       }
       images.push(

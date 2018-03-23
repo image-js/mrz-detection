@@ -46,7 +46,7 @@
   "dependencies": {
     "bson": "^2.0.4",
     "fs-extra": "^5.0.0",
-    "hog-features": "^0.1.0",
+    "hog-features": "^0.2.0",
     "image-js": "^0.20.0",
     "libsvm-js": "^0.1.3",
     "lodash.groupby": "^4.6.0",

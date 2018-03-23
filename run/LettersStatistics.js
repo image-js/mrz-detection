@@ -21,12 +21,6 @@ class LettersStatistics {
         throw new Error(`MRZ for ${name} should have at least 2 lines`);
       }
 
-      /*var size = currentMRZ[0].length;
-        for (var j = 1; j < currentMRZ.length; ++j) {
-            if(size !== currentMRZ[j].length) {
-                throw new Error(`MRZ for ${name} should have the same length for all the lines`);
-            }
-        }*/
       this.data[name] = currentMRZ;
     }
 

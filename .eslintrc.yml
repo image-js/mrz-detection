@@ -1,2 +1,4 @@
 extends: cheminfo
 parser: babel-eslint
+rules:
+  no-await-in-loop: off
