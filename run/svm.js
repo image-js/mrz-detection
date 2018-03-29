@@ -51,7 +51,7 @@ async function classify(data, options) {
     classifier,
     descriptors,
     testSet.map((l) => l.descriptor)
-  ).map(String.fromCharCode);
+  ).map((code) => String.fromCharCode(code));
   printPrediction(testSet, prediction);
 }
 
