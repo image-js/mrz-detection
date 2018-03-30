@@ -11,18 +11,20 @@ const BSON = require('bson');
 const kernel = new Kernel('linear');
 
 let SVM;
-
 function extractHOG(image) {
-  image = image.scale({ width: 18, height: 18 });
-
+  image = image.scale({ width: 20, height: 20 });
+  image = image.pad({
+    size: 2
+  });
   let optionsHog = {
-    cellSize: 4,
-    blockSize: 1,
+    cellSize: 5,
+    blockSize: 2,
     blockStride: 1,
     bins: 4,
     norm: 'L2'
   };
-  return hog.extractHOG(image, optionsHog);
+  let hogFeatures = hog.extractHOG(image, optionsHog);
+  return hogFeatures;
 }
 
 // Get descriptors for images from 1 identity card
