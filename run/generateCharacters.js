@@ -36,13 +36,14 @@ async function generate() {
   for (let blur of blurs) {
     for (let kernelSize of dilations) {
       for (let fontSize of fontSizes) {
-        console.log(`
-          blur: ${blur}
-          dilation: ${kernelSize}
-          fontSize: ${fontSize}
-        `);
         // eslint-disable-next-line no-await-in-loop
         for (let font of fonts) {
+          console.log(`
+            font: ${font}
+            fontSize: ${fontSize}
+            blur: ${blur}
+            dilation: ${kernelSize}
+        `);
           const imageOptions = {
             allowedRotation: maxRotation,
             numberPerLine: rotations + (rotations + 1) % 2, // odd number to ensure 0 angle included
@@ -75,7 +76,7 @@ async function generate() {
                 .grey();
 
               let borderSize = (kernelSize - 1) / 2;
-              borderSize = Math.max(borderSize, blur + 1);
+              borderSize = Math.max(borderSize, Math.round(blur * 1.5));
               let mask;
               let roiManager;
               img = img.pad({
@@ -128,6 +129,7 @@ async function generate() {
                 ),
                 image: img /*roiManager.paint()*/,
                 generated: true,
+                card: `generated-blur${blur}-font${font}-fontSize${fontSize}-dilation${kernelSize}`,
                 char: chars[count],
                 code: chars[count].charCodeAt(0)
               });
