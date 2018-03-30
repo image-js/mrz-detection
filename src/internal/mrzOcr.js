@@ -41,7 +41,8 @@ async function mrzOcr(image, fontFingerprint, options = {}) {
       }
     }
 
-    const predicted = await predictImages(images, 'ESC');
+    let predicted = await predictImages(images, 'ESC');
+    predicted = predicted.map((p) => String.fromCharCode(p));
     let count = 0;
     for (let line of lines) {
       let lineText = '';

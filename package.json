@@ -57,7 +57,7 @@
     "ml-kernel": "^2.3.4",
     "ml-matrix": "^5.0.1",
     "mrz": "^3.1.0",
-    "ocr-tools": "^0.0.5",
+    "ocr-tools": "github:image-js/ocr-tools#919c063cc824abebe3eefb4bbaf06ff9b8cba8d8",
     "radians-degrees": "^1.0.0",
     "transformation-matrix": "^1.7.0"
   }

@@ -8,6 +8,7 @@ const minimist = require('minimist');
 const IJS = require('image-js').Image;
 
 const { writeImages } = require('../src/util/readWrite');
+const roiOptions = require('../src/roiOptions');
 
 const argv = minimist(process.argv.slice(2));
 
@@ -52,21 +53,14 @@ async function exec() {
       const parsedPath = parsePath(imagePath);
       const image = await IJS.load(imagePath);
       const result = getLinesFromImage(image, {
-        roiOptions: {
-          positive: true,
-          negative: false,
-          minSurface: 20,
-          minRatio: 0.3,
-          maxRatio: 3.0,
-          algorithm: 'otsu',
-          randomColors: true
-        },
+        roiOptions,
         fingerprintOptions: {}
       });
 
       const name = parsedPath.base.replace(parsedPath.ext, '');
       if (matchesExpected(name, result.lines)) {
         console.log('looks good, write chars');
+
         for (let i = 0; i < result.lines.length; i++) {
           const line = result.lines[i];
           // eslint-disable-next-line no-await-in-loop
@@ -88,7 +82,7 @@ async function exec() {
               filePath: join(folder, fileName),
               generated: false,
               char,
-              charCode: char.charCodeAt(0),
+              code: char.charCodeAt(0),
               card: name
             });
           }
