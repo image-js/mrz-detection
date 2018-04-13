@@ -3,7 +3,7 @@ const path = require('path');
 
 const fs = require('fs-extra');
 const hog = require('hog-features');
-const SVMPromise = Promise.resolve(require('libsvm-js/asm'));
+const SVMPromise = Promise.resolve(require('libsvm-js/wasm'));
 const Kernel = require('ml-kernel');
 const range = require('lodash.range');
 const BSON = require('bson');
