@@ -127,7 +127,7 @@ async function generate() {
                   outDir,
                   `${chars[count]}-${globalCount}.png`
                 ),
-                image: img /*roiManager.paint()*/,
+                image: img /* roiManager.paint() */,
                 generated: true,
                 card: `generated-blur${blur}-font${font}-fontSize${fontSize}-dilation${kernelSize}`,
                 char: chars[count],
