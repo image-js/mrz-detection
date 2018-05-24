@@ -55,6 +55,7 @@ async function classify(data, options) {
     testSet.map((l) => l.descriptor)
   ).map((code) => String.fromCharCode(code));
   printPrediction(testSet, prediction);
+  classifier.free();
 }
 
 function printPrediction(letters, predicted) {
