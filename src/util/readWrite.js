@@ -53,6 +53,7 @@ async function readImages(dir) {
         // eslint-disable-next-line no-console
         console.log(`no metadata associated to ${filePath} found`);
       }
+      metadata.filePath = filePath;
       images.push(
         Object.assign(metadata, {
           image,
