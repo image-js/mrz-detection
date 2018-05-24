@@ -6,6 +6,7 @@ const hog = require('hog-features');
 const SVMPromise = Promise.resolve(require('libsvm-js/wasm'));
 const Kernel = require('ml-kernel');
 const range = require('lodash.range');
+const uniq = require('lodash.uniq');
 const BSON = require('bson');
 
 const kernel = new Kernel('linear');
@@ -82,6 +83,14 @@ function predict(classifier, Xtrain, Xtest) {
 
 async function train(letters) {
   await loadSVM();
+  let SVMOptionsOneClass = {
+    type: SVM.SVM_TYPE.ONE_CLASS,
+    kernel: SVM.KERNEL_TYPES.PRECOMPUTED,
+    cost: 1,
+    nu: 0.1,
+    quiet: true
+  };
+
   let SVMOptions = {
     type: SVM.SVM_TYPES.C_SVC,
     kernel: SVM.KERNEL_TYPES.PRECOMPUTED,
@@ -89,7 +98,14 @@ async function train(letters) {
   };
 
   const Xtrain = letters.map((s) => s.descriptor);
-  const Ytrain = letters.map((s) => s.code);
+  const Ytrain = letters.map((s) => s.label);
+
+  const uniqLabels = uniq(Ytrain);
+  if (uniqLabels.length === 1) {
+    // eslint-disable-next-line no-console
+    console.log('training mode: ONE_CLASS');
+    SVMOptions = SVMOptions = SVMOptionsOneClass;
+  }
 
   var classifier = new SVM(SVMOptions);
 

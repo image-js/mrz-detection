@@ -51,6 +51,7 @@
     "libsvm-js": "^0.2.1",
     "lodash.groupby": "^4.6.0",
     "lodash.range": "^3.2.0",
+    "lodash.uniq": "^4.5.0",
     "minimist": "^1.2.0",
     "mkdirp": "^0.5.1",
     "ml-distance": "^2.1.1",

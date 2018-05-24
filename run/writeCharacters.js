@@ -83,6 +83,7 @@ async function exec() {
               generated: false,
               char,
               code: char.charCodeAt(0),
+              label: argv.oneClass ? 0 : char.charCodeAt(0),
               card: name
             });
           }
