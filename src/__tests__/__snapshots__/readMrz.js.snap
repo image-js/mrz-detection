@@ -1,0 +1,9 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`test the extraction of MRZ characters on an identity card 1`] = `
+Array [
+  "IDAUT000009993<<<<<<<<<<<<<<<<",
+  "7109094F111231AUT<<<<<<<<<<<<0",
+  "MUSTERFRAU<<ISOLDE<<<<<<<<<<<<",
+]
+`;

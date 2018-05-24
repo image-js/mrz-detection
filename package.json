@@ -11,7 +11,7 @@
   "scripts": {
     "eslint": "eslint src run",
     "eslint-fix": "npm run eslint -- --fix",
-    "test": "run-s eslint",
+    "test": "run-s testonly eslint",
     "test-travis": "eslint src && jest --coverage && codecov",
     "testonly": "jest"
   },
