@@ -81,8 +81,9 @@ function predict(classifier, Xtrain, Xtest) {
   return classifier.predict(Ktest);
 }
 
-async function train(letters) {
+async function train(letters, SVMOptions) {
   await loadSVM();
+
   let SVMOptionsOneClass = {
     type: SVM.SVM_TYPES.ONE_CLASS,
     kernel: SVM.KERNEL_TYPES.PRECOMPUTED,
@@ -92,24 +93,27 @@ async function train(letters) {
     quiet: true
   };
 
-  let SVMOptions = {
+  let SVMNormalOptions = {
     type: SVM.SVM_TYPES.C_SVC,
     kernel: SVM.KERNEL_TYPES.PRECOMPUTED,
     quiet: true
   };
 
-  let oneClass = false;
-
   const Xtrain = letters.map((s) => s.descriptor);
   const Ytrain = letters.map((s) => s.label);
 
-  const uniqLabels = uniq(Ytrain);
-  if (uniqLabels.length === 1) {
-    // eslint-disable-next-line no-console
-    console.log('training mode: ONE_CLASS');
-    SVMOptions = SVMOptions = SVMOptionsOneClass;
-    oneClass = true;
+  if (!SVMOptions) {
+    const uniqLabels = uniq(Ytrain);
+    if (uniqLabels.length === 1) {
+      // eslint-disable-next-line no-console
+      console.log('training mode: ONE_CLASS');
+      SVMOptions = SVMOptions = SVMOptionsOneClass;
+    } else {
+      SVMOptions = SVMNormalOptions;
+    }
   }
+
+  let oneClass = SVMOptions.type === SVM.SVM_TYPES.ONE_CLASS;
 
   var classifier = new SVM(SVMOptions);
 
