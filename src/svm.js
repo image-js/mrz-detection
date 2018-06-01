@@ -84,10 +84,11 @@ function predict(classifier, Xtrain, Xtest) {
 async function train(letters) {
   await loadSVM();
   let SVMOptionsOneClass = {
-    type: SVM.SVM_TYPE.ONE_CLASS,
+    type: SVM.SVM_TYPES.ONE_CLASS,
     kernel: SVM.KERNEL_TYPES.PRECOMPUTED,
-    cost: 1,
-    nu: 0.1,
+    // cost: 0.1,
+    nu: 0.5,
+    // gamma: 0.1,
     quiet: true
   };
 
@@ -97,6 +98,8 @@ async function train(letters) {
     quiet: true
   };
 
+  let oneClass = false;
+
   const Xtrain = letters.map((s) => s.descriptor);
   const Ytrain = letters.map((s) => s.label);
 
@@ -105,6 +108,7 @@ async function train(letters) {
     // eslint-disable-next-line no-console
     console.log('training mode: ONE_CLASS');
     SVMOptions = SVMOptions = SVMOptionsOneClass;
+    oneClass = true;
   }
 
   var classifier = new SVM(SVMOptions);
@@ -113,7 +117,7 @@ async function train(letters) {
     .compute(Xtrain)
     .addColumn(0, range(1, Ytrain.length + 1));
   classifier.train(KData, Ytrain);
-  return { classifier, descriptors: Xtrain };
+  return { classifier, descriptors: Xtrain, oneClass };
 }
 
 function getFilePath(name) {

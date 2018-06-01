@@ -58,15 +58,15 @@ async function exec() {
       });
 
       const name = parsedPath.base.replace(parsedPath.ext, '');
-      if (matchesExpected(name, result.lines)) {
+      const asExpected = matchesExpected(name, result.lines);
+      if (asExpected) {
         console.log('looks good, write chars');
-
         for (let i = 0; i < result.lines.length; i++) {
           const line = result.lines[i];
           // eslint-disable-next-line no-await-in-loop
           for (let j = 0; j < line.rois.length; j++) {
-            const char = expected[name][i][j];
-            if (!shouldAdd(char)) continue;
+            const char = asExpected ? expected[name][i][j] : '';
+            if (asExpected && !shouldAdd(char)) continue;
             const roi = line.rois[j];
             const folder = join(outDir, char);
             const fileName = `${name}-${i}-${j}.png`;
@@ -83,11 +83,13 @@ async function exec() {
               generated: false,
               char,
               code: char.charCodeAt(0),
-              label: argv.oneClass ? 0 : char.charCodeAt(0),
+              label: argv.oneClass ? +argv.oneClass : char.charCodeAt(0),
               card: name
             });
           }
         }
+      } else {
+        console.log('did not pass check, not including this image');
       }
     } catch (e) {
       console.log('error', e);
@@ -110,7 +112,6 @@ async function exec() {
   }
 
   function matchesExpected(name, lines) {
-    console.log(name);
     if (lines.length !== expected[name].length) return false;
     for (let i = 0; i < lines.length; i++) {
       const x = expected[name][i];

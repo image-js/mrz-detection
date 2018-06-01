@@ -4,6 +4,7 @@
 const path = require('path');
 
 const groupBy = require('lodash.groupby');
+const uniq = require('lodash.uniq');
 const minimist = require('minimist');
 
 const {
@@ -48,18 +49,28 @@ async function classify(data, options) {
   const testSet = data.filter((d) => d.card === options.testCard);
   const trainSet = data.filter((d) => d.card !== options.testCard);
 
-  const { classifier, descriptors } = await train(trainSet);
-  const prediction = predict(
+  const { classifier, descriptors, oneClass } = await train(trainSet);
+  let prediction = predict(
     classifier,
     descriptors,
     testSet.map((l) => l.descriptor)
-  ).map((code) => String.fromCharCode(code));
-  printPrediction(testSet, prediction);
+  );
+  if (oneClass) {
+    printPredictionOneClass(testSet, prediction);
+  } else {
+    prediction = prediction.map((code) => String.fromCharCode(code));
+    printPrediction(testSet, prediction);
+  }
   classifier.free();
 }
 
 function printPrediction(letters, predicted) {
   const expected = letters.map((l) => l.char);
+  error(predicted, expected);
+}
+
+function printPredictionOneClass(testSet, predicted) {
+  const expected = testSet.map((l) => l.label);
   error(predicted, expected);
 }
 
@@ -107,27 +118,48 @@ async function crossValidation(data) {
 }
 
 async function exec() {
-  if (!argv.dir) {
-    throw new Error('dir argument is mandatory');
+  try {
+    if (!argv.dir) {
+      throw new Error('dir argument is mandatory');
+    }
+    const data = await loadData(argv.dir);
+    if (argv.cv) {
+      await crossValidation(data);
+    } else if (argv.saveModel || argv.applyModel) {
+      if (!argv.modelName) {
+        throw new Error('model name required');
+      }
+      if (argv.saveModel) {
+        const data = await loadData(argv.dir);
+        await createModel(data, argv.modelName);
+      } else {
+        let predicted = await applyModel(
+          argv.modelName,
+          data.map((l) => l.descriptor)
+        );
+        const type = inferPredictionType(predicted);
+        if (type === 'ONE_CLASS') {
+          printPredictionOneClass(data, predicted);
+        } else {
+          predicted = predicted.map((p) => String.fromCharCode(p));
+          printPrediction(data, predicted);
+        }
+      }
+    }
+  } catch (e) {
+    console.error(e);
   }
-  const data = await loadData(argv.dir);
-  if (argv.cv) {
-    await crossValidation(data);
-  } else if (argv.saveModel || argv.applyModel) {
-    if (!argv.modelName) {
-      throw new Error('model name required');
-    }
-    if (argv.saveModel) {
-      const data = await loadData(argv.dir);
-      await createModel(data, argv.modelName);
-    } else {
-      let predicted = await applyModel(
-        argv.modelName,
-        data.map((l) => l.descriptor)
-      );
-      predicted = predicted.map((p) => String.fromCharCode(p));
-      printPrediction(data, predicted);
-    }
+}
+
+function inferPredictionType(predicted) {
+  const uniqLabels = uniq(predicted);
+  if (
+    uniqLabels.length > 2 ||
+    (!uniqLabels.includes(1) && !uniqLabels.includes(-1))
+  ) {
+    return 'MULTI_CLASS';
+  } else {
+    return 'ONE_CLASS';
   }
 }
 
