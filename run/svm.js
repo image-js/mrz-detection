@@ -6,6 +6,7 @@ const path = require('path');
 const groupBy = require('lodash.groupby');
 const uniq = require('lodash.uniq');
 const minimist = require('minimist');
+const paramGrid = require('ml-param-grid');
 
 const {
   createModel,
@@ -49,7 +50,10 @@ async function classify(data, options) {
   const testSet = data.filter((d) => d.card === options.testCard);
   const trainSet = data.filter((d) => d.card !== options.testCard);
 
-  const { classifier, descriptors, oneClass } = await train(trainSet);
+  const { classifier, descriptors, oneClass } = await train(
+    trainSet,
+    options.SVMOptions
+  );
   let prediction = predict(
     classifier,
     descriptors,
@@ -101,7 +105,7 @@ function error(predicted, expected) {
   return correct;
 }
 
-async function crossValidation(data) {
+async function crossValidation(data, SVMOptions) {
   console.log('total data size', data.length);
 
   // get distinct data sets
@@ -112,7 +116,8 @@ async function crossValidation(data) {
     console.log(card);
     // eslint-disable-next-line no-await-in-loop
     await classify(data, {
-      testCard: card
+      testCard: card,
+      SVMOptions
     });
   }
 }
@@ -124,7 +129,10 @@ async function exec() {
     }
     const data = await loadData(argv.dir);
     if (argv.cv) {
-      await crossValidation(data);
+      const SVMOptionsGrid = getSVMOptionsGrid(argv);
+      for (let SVMOptions of SVMOptionsGrid) {
+        await crossValidation(data, SVMOptions);
+      }
     } else if (argv.saveModel || argv.applyModel) {
       if (!argv.modelName) {
         throw new Error('model name required');
@@ -161,6 +169,20 @@ function inferPredictionType(predicted) {
   } else {
     return 'ONE_CLASS';
   }
+}
+
+function getSVMOptionsGrid(options) {
+  const validOptions = ['nu', 'cost', 'gamma', 'kernel', 'epsilon'];
+  const optionRanges = {};
+  for (let option of validOptions) {
+    if (options[option]) {
+      optionRanges[option] = String(options[option])
+        .split(',')
+        .map((val) => (isNaN(+val) ? val : +val));
+    }
+  }
+  optionRanges.quiet = true;
+  return paramGrid(optionRanges);
 }
 
 exec();

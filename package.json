@@ -57,6 +57,7 @@
     "ml-distance": "^2.1.1",
     "ml-kernel": "^2.3.4",
     "ml-matrix": "^5.0.1",
+    "ml-param-grid": "^1.0.0",
     "mrz": "^3.1.0",
     "ocr-tools": "^0.1.1",
     "radians-degrees": "^1.0.0",

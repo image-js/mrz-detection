@@ -102,15 +102,13 @@ async function train(letters, SVMOptions) {
   const Xtrain = letters.map((s) => s.descriptor);
   const Ytrain = letters.map((s) => s.label);
 
-  if (!SVMOptions) {
-    const uniqLabels = uniq(Ytrain);
-    if (uniqLabels.length === 1) {
-      // eslint-disable-next-line no-console
-      console.log('training mode: ONE_CLASS');
-      SVMOptions = SVMOptions = SVMOptionsOneClass;
-    } else {
-      SVMOptions = SVMNormalOptions;
-    }
+  const uniqLabels = uniq(Ytrain);
+  if (uniqLabels.length === 1) {
+    // eslint-disable-next-line no-console
+    console.log('training mode: ONE_CLASS');
+    SVMOptions = Object.assign({}, SVMOptionsOneClass, SVMOptions);
+  } else {
+    SVMOptions = Object.assign({}, SVMNormalOptions, SVMOptions);
   }
 
   let oneClass = SVMOptions.type === SVM.SVM_TYPES.ONE_CLASS;
