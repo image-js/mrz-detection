@@ -124,34 +124,25 @@ async function crossValidation(data, SVMOptions) {
 
 async function exec() {
   try {
-    if (!argv.dir) {
-      throw new Error('dir argument is mandatory');
-    }
-    const data = await loadData(argv.dir);
+    validateArguments(argv);
     if (argv.cv) {
+      const data = await loadData(argv.trainDir);
       const SVMOptionsGrid = getSVMOptionsGrid(argv);
       for (let SVMOptions of SVMOptionsGrid) {
         await crossValidation(data, SVMOptions);
       }
-    } else if (argv.saveModel || argv.applyModel) {
-      if (!argv.modelName) {
-        throw new Error('model name required');
-      }
-      if (argv.saveModel) {
-        const data = await loadData(argv.dir);
-        await createModel(data, argv.modelName);
+    } else if (argv.saveModel) {
+      const data = await loadData(argv.trainDir);
+      await createModel(data, argv.saveModel);
+    } else if (argv.model) {
+      const data = await loadData(argv.testDir);
+      let predicted = await applyModel(argv.model, data.map((l) => l.descriptor));
+      const type = inferPredictionType(predicted);
+      if (type === 'ONE_CLASS') {
+        printPredictionOneClass(data, predicted);
       } else {
-        let predicted = await applyModel(
-          argv.modelName,
-          data.map((l) => l.descriptor)
-        );
-        const type = inferPredictionType(predicted);
-        if (type === 'ONE_CLASS') {
-          printPredictionOneClass(data, predicted);
-        } else {
-          predicted = predicted.map((p) => String.fromCharCode(p));
-          printPrediction(data, predicted);
-        }
+        predicted = predicted.map((p) => String.fromCharCode(p));
+        printPrediction(data, predicted);
       }
     }
   } catch (e) {
@@ -183,6 +174,32 @@ function getSVMOptionsGrid(options) {
   }
   optionRanges.quiet = true;
   return paramGrid(optionRanges);
+}
+
+function validateArguments(args) {
+  if (args.trainDir === undefined && args.model === undefined) {
+    throw new Error('--trainDir is mandatory except when using --model');
+  }
+
+  {
+    const count =
+      isDefined(args.testDir) + isDefined(args.saveModel) + isDefined(args.cv);
+    if (count === 0) {
+      throw new Error(
+        'You must specify one of the following options: --testDir, --saveModel, --cv'
+      );
+    }
+    if (count > 1) {
+      throw new Error(
+        '--testDir, --saveModel, --cv cannot be specified together'
+      );
+    }
+  }
+}
+
+function isDefined(option) {
+  if (option === undefined) return 0;
+  return 1;
 }
 
 exec();
