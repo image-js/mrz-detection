@@ -52,12 +52,14 @@ async function classify(data, options) {
 
   const { classifier, descriptors, oneClass } = await train(
     trainSet,
-    options.SVMOptions
+    options.SVMOptions,
+    options.kernelOptions
   );
   let prediction = predict(
     classifier,
     descriptors,
-    testSet.map((l) => l.descriptor)
+    testSet.map((l) => l.descriptor),
+    options.kernelOptions
   );
   if (oneClass) {
     printPredictionOneClass(testSet, prediction);
@@ -68,8 +70,10 @@ async function classify(data, options) {
   classifier.free();
 }
 
-function printPrediction(letters, predicted) {
-  const expected = letters.map((l) => l.char);
+function printPrediction(dataSet, predicted) {
+  const expected = dataSet.map((l) => {
+    return String.fromCharCode(l.label);
+  });
   error(predicted, expected);
 }
 
@@ -105,7 +109,7 @@ function error(predicted, expected) {
   return correct;
 }
 
-async function crossValidation(data, SVMOptions) {
+async function crossValidation(data, SVMOptions, kernelOptions) {
   console.log('total data size', data.length);
 
   // get distinct data sets
@@ -117,7 +121,8 @@ async function crossValidation(data, SVMOptions) {
     // eslint-disable-next-line no-await-in-loop
     await classify(data, {
       testCard: card,
-      SVMOptions
+      SVMOptions,
+      kernelOptions
     });
   }
 }
@@ -128,12 +133,24 @@ async function exec() {
     if (argv.cv) {
       const data = await loadData(argv.trainDir);
       const SVMOptionsGrid = getSVMOptionsGrid(argv);
+      const kernelOptionsGrid = getKernelOptionsGrid(argv);
       for (let SVMOptions of SVMOptionsGrid) {
-        await crossValidation(data, SVMOptions);
+        for (let kernelOptions of kernelOptionsGrid) {
+          await crossValidation(data, SVMOptions, kernelOptions);
+        }
       }
     } else if (argv.saveModel) {
       const data = await loadData(argv.trainDir);
-      await createModel(data, argv.saveModel);
+      const SVMOptions = Array.from(getSVMOptionsGrid(argv));
+      const kernelOptions = Array.from(getKernelOptionsGrid(argv));
+      if (SVMOptions.length !== 1) {
+        console.log(SVMOptions);
+        throw new Error('Cannot save model with multiple SVM parameters');
+      }
+      if (kernelOptions.length !== 1) {
+        throw new Error('Cannot save model with multiple kernel options');
+      }
+      await createModel(data, argv.saveModel, SVMOptions[0], kernelOptions[0]);
     } else if (argv.model) {
       const data = await loadData(argv.testDir);
       let predicted = await applyModel(argv.model, data.map((l) => l.descriptor));
@@ -143,6 +160,30 @@ async function exec() {
       } else {
         predicted = predicted.map((p) => String.fromCharCode(p));
         printPrediction(data, predicted);
+      }
+    } else if (argv.testDir) {
+      // trainDir and testDir are specified together
+      const SVMOptionsGrid = getSVMOptionsGrid(argv);
+      const kernelOptionsGrid = getKernelOptionsGrid(argv);
+      const trainData = await loadData(argv.trainDir);
+      const testData = await loadData(argv.testDir);
+      const trainDescriptors = trainData.map((l) => l.descriptor);
+      const testDescriptors = testData.map((l) => l.descriptor);
+      for (let SVMOptions of SVMOptionsGrid) {
+        for (let kernelOptions of kernelOptionsGrid) {
+          const { classifier } = await train(
+            trainData,
+            SVMOptions,
+            kernelOptions
+          );
+          const predicted = predict(
+            classifier,
+            trainDescriptors,
+            testDescriptors,
+            kernelOptions
+          );
+          printPrediction(testData, predicted);
+        }
       }
     }
   } catch (e) {
@@ -162,12 +203,11 @@ function inferPredictionType(predicted) {
   }
 }
 
-function getSVMOptionsGrid(options) {
-  const validOptions = ['nu', 'cost', 'gamma', 'kernel', 'epsilon'];
+function getOptionsGrid(options, validOptions, mapProp = {}) {
   const optionRanges = {};
   for (let option of validOptions) {
     if (options[option]) {
-      optionRanges[option] = String(options[option])
+      optionRanges[mapProp[option] || option] = String(options[option])
         .split(',')
         .map((val) => (isNaN(+val) ? val : +val));
     }
@@ -176,14 +216,26 @@ function getSVMOptionsGrid(options) {
   return paramGrid(optionRanges);
 }
 
+function getSVMOptionsGrid(options) {
+  const validOptions = ['nu', 'cost', 'epsilon'];
+  return getOptionsGrid(options, validOptions);
+}
+
+function getKernelOptionsGrid(options) {
+  const validOptions = ['kernel', 'gamma'];
+  return getOptionsGrid(options, validOptions, {
+    kernel: 'type',
+    gamma: 'sigma'
+  });
+}
+
 function validateArguments(args) {
-  if (args.trainDir === undefined && args.model === undefined) {
+  if (isDefined(args.trainDir, args.model) === 0) {
     throw new Error('--trainDir is mandatory except when using --model');
   }
 
   {
-    const count =
-      isDefined(args.testDir) + isDefined(args.saveModel) + isDefined(args.cv);
+    let count = isDefined(args.testDir, args.saveModel, args.cv);
     if (count === 0) {
       throw new Error(
         'You must specify one of the following options: --testDir, --saveModel, --cv'
@@ -194,12 +246,16 @@ function validateArguments(args) {
         '--testDir, --saveModel, --cv cannot be specified together'
       );
     }
+    count = isDefined;
   }
 }
 
-function isDefined(option) {
-  if (option === undefined) return 0;
-  return 1;
+function isDefined(...options) {
+  let count = 0;
+  for (let option of options) {
+    if (option !== undefined) count++;
+  }
+  return count;
 }
 
 exec();
