@@ -89,11 +89,13 @@ function error(predicted, expected) {
   let correct = 0;
   for (var index = 0; index < predicted.length; index++) {
     if (expected[index] !== predicted[index]) {
-      console.log(
-        `${index} => expected : ${expected[index]} and predicted : ${
-          predicted[index]
-        }`
-      );
+      if (!argv.summary) {
+        console.log(
+          `${index} => expected : ${expected[index]} and predicted : ${
+            predicted[index]
+          }`
+        );
+      }
     }
     if (predicted[index] === expected[index]) {
       correct++;
@@ -101,8 +103,7 @@ function error(predicted, expected) {
   }
   console.log(
     `${correct}/${predicted.length} ( ${(
-      correct /
-      predicted.length *
+      (correct / predicted.length) *
       100
     ).toFixed(2)}% )`
   );
