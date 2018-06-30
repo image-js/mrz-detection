@@ -15,7 +15,7 @@ if (ENVIRONMENT_IS_WEB || ENVIRONMENT_IS_WORKER) {
   fs = {
     readFile: function (url, encoding) {
       return request({
-        url: location.origin + path.join(path.dirname(location.pathname), url),
+        url: ((self && self.config && self.config.fsRootUrl) ? `${self.config.fsRootUrl}/${url}` : `${location.origin}/${url}`),
         encoding: null,
         resolveWithFullResponse: false
       })
