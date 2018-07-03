@@ -1,9 +1,49 @@
 'use strict';
+const ENVIRONMENT_IS_WEB = typeof window === 'object';
+const ENVIRONMENT_IS_WORKER = typeof importScripts === 'function';
+
 const path = require('path');
 
-const fs = require('fs-extra');
+// babelify will generate distinct names if we define
+// the same constants both in "if" and "else" blocks
+// Variables are fine for me...
+var fs;
+var SVMPromise;
+
+if (ENVIRONMENT_IS_WEB || ENVIRONMENT_IS_WORKER) {
+  const request = require('request-promise');
+  fs = {
+    readFile: function (url, encoding) {
+      var dirname = __dirname.split('/');
+      dirname.pop();
+      url = url.replace(dirname.join('/'), '');
+      return request({
+        /* global self */
+        /* global location */
+        /* eslint no-undef: "error" */
+        url: ((self && self.config && self.config.fsRootUrl) ? `${self.config.fsRootUrl}/${url}` : `${location.origin}/${url}`),
+        encoding: null,
+        resolveWithFullResponse: false
+      })
+        .then(function (body) {
+          var buf = Buffer.from(body);
+          return (encoding) ? buf.toString(encoding) : buf;
+        });
+    },
+    writeFile: function () {
+      throw new Error('writeFile not implemented');
+    }
+  };
+  SVMPromise = Promise.resolve(require('libsvm-js/asm'));
+} else {
+  // use a variable for the module name so that browserify does not include it
+  var _module = 'fs-extra';
+  fs = require(_module);
+  _module = 'libsvm-js/wasm';
+  SVMPromise = Promise.resolve(require(_module));
+}
+
 const hog = require('hog-features');
-const SVMPromise = Promise.resolve(require('libsvm-js/wasm'));
 const Kernel = require('ml-kernel');
 const range = require('lodash.range');
 const uniq = require('lodash.uniq');
