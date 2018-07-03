@@ -15,6 +15,9 @@ if (ENVIRONMENT_IS_WEB || ENVIRONMENT_IS_WORKER) {
   fs = {
     readFile: function (url, encoding) {
       return request({
+        /* global self */
+        /* global location */
+        /* eslint no-undef: "error" */
         url: ((self && self.config && self.config.fsRootUrl) ? `${self.config.fsRootUrl}/${url}` : `${location.origin}/${url}`),
         encoding: null,
         resolveWithFullResponse: false
