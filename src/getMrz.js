@@ -7,13 +7,14 @@
 
 const radiansDegrees = require('radians-degrees');
 const { Matrix } = require('ml-matrix');
+
 const {
   rotateDEG,
   translate,
   transform,
   applyToPoint,
   applyToPoints
-} = require('transformation-matrix');
+} = require('transformation-matrix/build-commonjs');
 
 const rectKernel = getRectKernel(9, 5);
 const sqKernel = getRectKernel(19, 19);
