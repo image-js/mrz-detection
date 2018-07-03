@@ -57,6 +57,17 @@ function initWorker() {
     }
   }, false);
 
+  var pathname=document.location.pathname.split('/');
+  pathname.pop();
+  pathname=pathname.join('/');
+
+  worker.postMessage({
+    cmd: 'config',
+    config: {
+      fsRootUrl: document.location.origin+pathname
+    }
+  });
+
   return worker;
 }
 
