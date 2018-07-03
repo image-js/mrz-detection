@@ -1,8 +1,9 @@
 'use strict';
 
-const { join } = require('path');
+const ENVIRONMENT_IS_WEB = typeof window === 'object';
+const ENVIRONMENT_IS_WORKER = typeof importScripts === 'function';
 
-const { loadFontData } = require('ocr-tools');
+const { join } = require('path');
 
 const mrzOcr = require('./internal/mrzOcr');
 const symbols = require('./internal/symbols'); // SYMBOLS MRZ NUMBERS
@@ -18,7 +19,15 @@ const fingerprintOptions = {
   ambiguity: true
 };
 
-const fontFingerprint = loadFontData(fingerprintOptions);
+var fontFingerprint;
+if (ENVIRONMENT_IS_WEB || ENVIRONMENT_IS_WORKER) {
+  fontFingerprint = require('../fontData/12x12/mrz/ocrb.json');
+} else {
+  // use a variable for the module name so that browserify does not include it
+  var _module = 'ocr-tools';
+  const { loadFontData } = require(_module);
+  fontFingerprint = loadFontData(fingerprintOptions);
+}
 
 async function readMrz(image, options = {}) {
   var { ocrResult, mask } = await mrzOcr(image, fontFingerprint, {
