@@ -64,7 +64,6 @@ async function classify(data, options) {
   if (oneClass) {
     printPredictionOneClass(testSet, prediction);
   } else {
-    prediction = prediction.map((code) => String.fromCharCode(code));
     printPrediction(testSet, prediction);
   }
   classifier.free();
@@ -74,6 +73,7 @@ function printPrediction(dataSet, predicted) {
   const expected = dataSet.map((l) => {
     return String.fromCharCode(l.label);
   });
+  predicted = predicted.map((code) => String.fromCharCode(code));
   error(predicted, expected);
 }
 
@@ -137,13 +137,14 @@ async function exec() {
       const kernelOptionsGrid = getKernelOptionsGrid(argv);
       for (let SVMOptions of SVMOptionsGrid) {
         for (let kernelOptions of kernelOptionsGrid) {
+          console.log(Object.assign({}, SVMOptions, kernelOptions));
           await crossValidation(data, SVMOptions, kernelOptions);
         }
       }
     } else if (argv.saveModel) {
       const data = await loadData(argv.trainDir);
-      const SVMOptions = Array.from(getSVMOptionsGrid(argv));
-      const kernelOptions = Array.from(getKernelOptionsGrid(argv));
+      const SVMOptions = getSVMOptionsGrid(argv);
+      const kernelOptions = getKernelOptionsGrid(argv);
       if (SVMOptions.length !== 1) {
         console.log(SVMOptions);
         throw new Error('Cannot save model with multiple SVM parameters');
@@ -159,7 +160,6 @@ async function exec() {
       if (type === 'ONE_CLASS') {
         printPredictionOneClass(data, predicted);
       } else {
-        predicted = predicted.map((p) => String.fromCharCode(p));
         printPrediction(data, predicted);
       }
     } else if (argv.testDir) {
@@ -172,7 +172,8 @@ async function exec() {
       const testDescriptors = testData.map((l) => l.descriptor);
       for (let SVMOptions of SVMOptionsGrid) {
         for (let kernelOptions of kernelOptionsGrid) {
-          const { classifier } = await train(
+          console.log(Object.assign({}, SVMOptions, kernelOptions));
+          const { classifier, oneClass } = await train(
             trainData,
             SVMOptions,
             kernelOptions
@@ -183,7 +184,11 @@ async function exec() {
             testDescriptors,
             kernelOptions
           );
-          printPrediction(testData, predicted);
+          if (oneClass) {
+            printPredictionOneClass(testData, predicted);
+          } else {
+            printPrediction(testData, predicted);
+          }
         }
       }
     }
@@ -219,15 +224,17 @@ function getOptionsGrid(options, validOptions, mapProp = {}) {
 
 function getSVMOptionsGrid(options) {
   const validOptions = ['nu', 'cost', 'epsilon'];
-  return getOptionsGrid(options, validOptions);
+  return Array.from(getOptionsGrid(options, validOptions));
 }
 
 function getKernelOptionsGrid(options) {
   const validOptions = ['kernel', 'gamma'];
-  return getOptionsGrid(options, validOptions, {
-    kernel: 'type',
-    gamma: 'sigma'
-  });
+  return Array.from(
+    getOptionsGrid(options, validOptions, {
+      kernel: 'type',
+      gamma: 'sigma'
+    })
+  );
 }
 
 function validateArguments(args) {
