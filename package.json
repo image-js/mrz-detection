@@ -55,6 +55,8 @@
     "lodash.uniq": "^4.5.0",
     "minimist": "^1.2.0",
     "mkdirp": "^0.5.1",
+    "ml-array-mean": "^1.0.1",
+    "ml-array-median": "^1.0.1",
     "ml-distance": "^2.1.1",
     "ml-kernel": "^2.3.4",
     "ml-matrix": "^5.0.1",
@@ -62,6 +64,7 @@
     "ocr-tools": "^0.1.1",
     "percentile": "^1.2.0",
     "radians-degrees": "^1.0.0",
+    "stats-mad": "^1.0.0",
     "transformation-matrix": "^1.7.0"
   }
 }
