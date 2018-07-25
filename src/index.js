@@ -2,5 +2,6 @@
 
 module.exports = {
   getMrz: require('./getMrz'),
-  readMrz: require('./readMrz')
+  readMrz: require('./readMrz'),
+  getRoiStats: require('./getRoiStats')
 };

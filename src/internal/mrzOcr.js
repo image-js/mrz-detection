@@ -22,8 +22,10 @@ async function mrzOcr(image, fontFingerprint, options = {}) {
   let ocrResult = [];
 
   rois = [];
-  for (let line of lines) {
-    for (let roi of line.rois) {
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    for (let j = 0; j < line.rois.length; j++) {
+      const roi = line.rois[j];
       rois.push({
         image: image.crop({
           x: roi.minX,
@@ -32,7 +34,9 @@ async function mrzOcr(image, fontFingerprint, options = {}) {
           height: roi.height
         }),
         width: roi.width,
-        height: roi.height
+        height: roi.height,
+        line: i,
+        column: j
       });
     }
   }
