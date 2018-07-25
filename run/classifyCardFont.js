@@ -2,25 +2,24 @@
 
 const groupBy = require('lodash.groupby');
 const mean = require('ml-array-mean');
+const minimist = require('minimist');
 
 const { loadData, applyModel } = require('../src/svm');
 const filterMAD = require('../src/util/filterOutliersMAD');
 
+const argv = minimist(process.argv.slice(2));
+
 async function exec() {
-  const dirA = './data/esc-v2-all';
-  const dirB = './data/bidif-2';
+  const dir = argv.dir;
+  if (!dir) throw new Error('--dir option is required');
 
-  const dataA = await loadData(dirA);
-  const dataB = await loadData(dirB);
+  const data = await loadData(dir);
 
-  const cardsA = groupBy(dataA, (data) => data.card);
-  const cardsB = groupBy(dataB, (data) => data.card);
+  const cards = groupBy(data, (data) => data.card);
 
-  const featuresA = await getFeatures(cardsA);
-  const featuresB = await getFeatures(cardsB);
+  const features = await getFeatures(cards);
 
-  console.log(featuresA);
-  console.log(featuresB);
+  console.log(features);
 }
 
 async function getFeatures(cards) {
