@@ -1,9 +1,6 @@
 // Runs a cross validation leaving all characters from an identity card out
 'use strict';
 
-const path = require('path');
-
-const groupBy = require('lodash.groupby');
 const uniq = require('lodash.uniq');
 const minimist = require('minimist');
 const paramGrid = require('ml-param-grid');
@@ -13,38 +10,10 @@ const {
   applyModel,
   predict,
   train,
-  extractHOG
+  loadData
 } = require('../src/svm');
-const { readImages } = require('../src/util/readWrite');
 
 const argv = minimist(process.argv.slice(2));
-
-async function loadData(dir) {
-  dir = path.resolve(path.join(__dirname, '..'), dir);
-  const data = await readImages(dir);
-  for (let entry of data) {
-    let { image } = entry;
-    entry.descriptor = extractHOG(image);
-    entry.height = image.height;
-  }
-
-  const groupedData = groupBy(data, (d) => d.card);
-  for (let card in groupedData) {
-    const heights = groupedData[card].map((d) => d.height);
-    const maxHeight = Math.max.apply(null, heights);
-    const minHeight = Math.min.apply(null, heights);
-    for (let d of groupedData[card]) {
-      // This last descriptor is very important to differentiate numbers and letters
-      // Because with OCR-B font, numbers are slightly higher than numbers
-      let bonusFeature = 1;
-      if (minHeight !== maxHeight) {
-        bonusFeature = (d.height - minHeight) / (maxHeight - minHeight);
-      }
-      d.descriptor.push(bonusFeature);
-    }
-  }
-  return data;
-}
 
 async function classify(data, options) {
   const testSet = data.filter((d) => d.card === options.testCard);

@@ -84,7 +84,9 @@ async function exec() {
               char,
               code: char.charCodeAt(0),
               label: argv.oneClass ? +argv.oneClass : char.charCodeAt(0),
-              card: name
+              card: name,
+              line: i,
+              column: j
             });
           }
         }
@@ -112,9 +114,11 @@ async function exec() {
   }
 
   function matchesExpected(name, lines) {
+    console.log(lines.length, expected[name].length);
     if (lines.length !== expected[name].length) return false;
     for (let i = 0; i < lines.length; i++) {
       const x = expected[name][i];
+      console.log(x.length, lines[i].rois.length);
       if (x.length !== lines[i].rois.length) {
         return false;
       }

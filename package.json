@@ -50,10 +50,13 @@
     "image-js": "^0.21.0",
     "libsvm-js": "^0.2.1",
     "lodash.groupby": "^4.6.0",
+    "lodash.mapvalues": "^4.6.0",
     "lodash.range": "^3.2.0",
     "lodash.uniq": "^4.5.0",
     "minimist": "^1.2.0",
     "mkdirp": "^0.5.1",
+    "ml-array-mean": "^1.0.1",
+    "ml-array-median": "^1.0.1",
     "ml-distance": "^2.1.1",
     "ml-kernel": "^2.3.4",
     "ml-matrix": "^5.0.1",
@@ -61,6 +64,7 @@
     "mrz": "^3.1.0",
     "ocr-tools": "^0.1.1",
     "radians-degrees": "^1.0.0",
+    "stats-mad": "^1.0.0",
     "transformation-matrix": "^1.7.0"
   }
 }
