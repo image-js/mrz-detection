@@ -12,8 +12,6 @@ const BSON = require('bson');
 
 const { readImages } = require('../src/util/readWrite');
 
-const kernel = new Kernel('linear');
-
 let SVM;
 
 async function loadData(dir) {
@@ -89,30 +87,40 @@ async function applyModel(name, Xtest) {
   await loadSVM();
   const { descriptors: descriptorsPath, model: modelPath } = getFilePath(name);
   const bson = new BSON();
-  const Xtrain = bson.deserialize(await fs.readFile(descriptorsPath))
-    .descriptors;
+  const { descriptors: Xtrain, kernelOptions } = bson.deserialize(
+    await fs.readFile(descriptorsPath)
+  );
+
   const model = await fs.readFile(modelPath, 'utf-8');
   const classifier = SVM.load(model);
-  const prediction = predict(classifier, Xtrain, Xtest);
+  const prediction = predict(classifier, Xtrain, Xtest, kernelOptions);
   return prediction;
 }
 
-async function createModel(letters, name) {
+async function createModel(letters, name, SVMOptions, kernelOptions) {
   const { descriptors: descriptorsPath, model: modelPath } = getFilePath(name);
-  const { descriptors, classifier } = await train(letters);
+  const { descriptors, classifier } = await train(
+    letters,
+    SVMOptions,
+    kernelOptions
+  );
   const bson = new BSON();
-  await fs.writeFile(descriptorsPath, bson.serialize({ descriptors }));
+  await fs.writeFile(
+    descriptorsPath,
+    bson.serialize({ descriptors, kernelOptions })
+  );
   await fs.writeFile(modelPath, classifier.serializeModel());
 }
 
-function predict(classifier, Xtrain, Xtest) {
+function predict(classifier, Xtrain, Xtest, kernelOptions) {
+  const kernel = getKernel(kernelOptions);
   const Ktest = kernel
     .compute(Xtest, Xtrain)
     .addColumn(0, range(1, Xtest.length + 1));
   return classifier.predict(Ktest);
 }
 
-async function train(letters) {
+async function train(letters, SVMOptions, kernelOptions) {
   await loadSVM();
   let SVMOptionsOneClass = {
     type: SVM.SVM_TYPES.ONE_CLASS,
@@ -123,13 +131,12 @@ async function train(letters) {
     quiet: true
   };
 
-  let SVMOptions = {
+  let SVMNormalOptions = {
     type: SVM.SVM_TYPES.C_SVC,
     kernel: SVM.KERNEL_TYPES.PRECOMPUTED,
+    gamma: 1,
     quiet: true
   };
-
-  let oneClass = false;
 
   const Xtrain = letters.map((s) => s.descriptor);
   const Ytrain = letters.map((s) => s.label);
@@ -138,11 +145,19 @@ async function train(letters) {
   if (uniqLabels.length === 1) {
     // eslint-disable-next-line no-console
     console.log('training mode: ONE_CLASS');
-    SVMOptions = SVMOptions = SVMOptionsOneClass;
-    oneClass = true;
+    SVMOptions = Object.assign({}, SVMOptionsOneClass, SVMOptions, {
+      kernel: SVM.KERNEL_TYPES.PRECOMPUTED
+    });
+  } else {
+    SVMOptions = Object.assign({}, SVMNormalOptions, SVMOptions, {
+      kernel: SVM.KERNEL_TYPES.PRECOMPUTED
+    });
   }
 
+  let oneClass = SVMOptions.type === SVM.SVM_TYPES.ONE_CLASS;
+
   var classifier = new SVM(SVMOptions);
+  let kernel = getKernel(kernelOptions);
 
   const KData = kernel
     .compute(Xtrain)
@@ -162,6 +177,11 @@ function getFilePath(name) {
 
 async function loadSVM() {
   SVM = await SVMPromise;
+}
+
+function getKernel(options) {
+  options = Object.assign({ type: 'linear' }, options);
+  return new Kernel(options.type, options);
 }
 
 module.exports = {
