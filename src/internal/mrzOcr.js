@@ -5,6 +5,7 @@ const { getLinesFromImage, doOcrOnLines } = require('ocr-tools');
 const { predictImages } = require('../svm');
 
 async function mrzOcr(image, fontFingerprint, options = {}) {
+  let rois;
   options = Object.assign({}, { method: 'svm' }, options);
   let { lines, mask, painted, averageSurface } = getLinesFromImage(
     image,
@@ -19,6 +20,23 @@ async function mrzOcr(image, fontFingerprint, options = {}) {
     lines = lines.slice(lines.length - 3, lines.length);
   }
   let ocrResult = [];
+
+  rois = [];
+  for (let line of lines) {
+    for (let roi of line.rois) {
+      rois.push({
+        image: image.crop({
+          x: roi.minX,
+          y: roi.minY,
+          width: roi.width,
+          height: roi.height
+        }),
+        width: roi.width,
+        height: roi.height
+      });
+    }
+  }
+
   if (options.method === 'tanimoto') {
     var ocrOptions = Object.assign({}, options.fingerprintOptions, {
       maxNotFound: 411
@@ -27,22 +45,11 @@ async function mrzOcr(image, fontFingerprint, options = {}) {
       (r) => r.text
     );
   } else if (options.method === 'svm') {
-    const images = [];
-    for (let line of lines) {
-      for (let roi of line.rois) {
-        images.push(
-          image.crop({
-            x: roi.minX,
-            y: roi.minY,
-            width: roi.width,
-            height: roi.height
-          })
-        );
-      }
-    }
-
-    let predicted = await predictImages(images, 'ESC-v2');
+    let predicted = await predictImages(rois.map((roi) => roi.image), 'ESC-v2');
     predicted = predicted.map((p) => String.fromCharCode(p));
+    predicted.forEach((p, idx) => {
+      rois[idx].predicted = p;
+    });
     let count = 0;
     for (let line of lines) {
       let lineText = '';
@@ -56,6 +63,7 @@ async function mrzOcr(image, fontFingerprint, options = {}) {
   }
 
   return {
+    rois,
     ocrResult,
     mask,
     painted,

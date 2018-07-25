@@ -21,7 +21,7 @@ const fingerprintOptions = {
 const fontFingerprint = loadFontData(fingerprintOptions);
 
 async function readMrz(image, options = {}) {
-  var { ocrResult, mask } = await mrzOcr(image, fontFingerprint, {
+  var { ocrResult, mask, rois } = await mrzOcr(image, fontFingerprint, {
     method: 'svm',
     roiOptions,
     fingerprintOptions
@@ -31,8 +31,7 @@ async function readMrz(image, options = {}) {
     mask.save(options.saveName);
   }
 
-  return ocrResult;
-  // return ocrResult.lines.map((line) => line.text);
+  return { rois, mrz: ocrResult };
 }
 
 module.exports = readMrz;

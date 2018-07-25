@@ -12,7 +12,7 @@ it(
     const img = await Image.load(path.join(__dirname, 'fixtures/id1.jpg'));
     let mrzImage = getMrz(img);
     // mrzImage.save('./test.jpg');
-    let mrz = await readMrz(mrzImage);
+    let { mrz } = await readMrz(mrzImage);
     expect(mrz).toMatchSnapshot();
   },
   15000
@@ -23,7 +23,8 @@ it(
   async () => {
     const img = await Image.load(path.join(__dirname, 'fixtures/id2.jpg'));
     let mrzImage = getMrz(img);
-    let mrz = await readMrz(mrzImage);
+    let { mrz, rois } = await readMrz(mrzImage);
+    console.log(rois);
     expect(mrz).toMatchSnapshot();
   },
   15000
