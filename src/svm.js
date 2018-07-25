@@ -10,11 +10,10 @@ const range = require('lodash.range');
 const uniq = require('lodash.uniq');
 const BSON = require('bson');
 
-const { readImages } = require('../src/util/readWrite');
-
 let SVM;
 
 async function loadData(dir) {
+  const { readImages } = require('../src/util/readWrite');
   dir = path.resolve(path.join(__dirname, '..'), dir);
   const data = await readImages(dir);
   for (let entry of data) {
