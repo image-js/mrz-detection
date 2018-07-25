@@ -1,23 +1,12 @@
 'use strict';
 
 const groupBy = require('lodash.groupby');
-const percentile = require('percentile');
-// const mean = require('ml-array-mean');
-const median = require('ml-array-median');
+const mean = require('ml-array-mean');
 
 const { loadData, applyModel } = require('../src/svm');
 const filterMAD = require('../src/util/filterOutliersMAD');
 
-function getCharHeightRatioDescriptor(images) {
-  const heights = images.map((img) => img.height);
-  return percentile(10, heights) / percentile(90, heights);
-}
-
 async function exec() {
-  //   const SVM = await SVMPromise;
-  //   const SVMOptions = {};
-  //   const svm = new SVM(SVMOptions);
-
   const dirA = './data/esc-v2-all';
   const dirB = './data/bidif-2';
 
@@ -30,11 +19,8 @@ async function exec() {
   const featuresA = await getFeatures(cardsA);
   const featuresB = await getFeatures(cardsB);
 
-  //   const featuresB = mapValues(cardsB, (card) =>
-  //     getCharHeightRatioDescriptor(card.map((c) => c.image))
-  //   );
-  // console.log(featuresA);
-  // console.log(featuresB);
+  console.log(featuresA);
+  console.log(featuresB);
 }
 
 async function getFeatures(cards) {
@@ -47,8 +33,10 @@ async function getFeatures(cards) {
     // console.log('length bef', card.length);
     // Filter < char for they can be smaller in some fonts
     card = card.filter((c, idx) => pred[idx] !== 60);
+    // only keep first two lines (not clear why it helps but it does)
+    card = card.filter((c) => c.line !== 2);
 
-    // console.log('length anfter', card.length);
+    // console.log('length after filter', card.length);
     // console.log(card.length);
     // console.log(card.map((c) => c.image.height));
     // console.log('length before MAD filtering', card.length);
@@ -71,12 +59,14 @@ async function getFeatures(cards) {
 
     grouped.letter = grouped.letter || [];
     grouped.number = grouped.number || [];
-    // console.log(grouped.number.length, grouped.letter.length);
+    // console.log('number of numbers', grouped.number.length);
+    // console.log('number of letters', grouped.letter.length);
+    // console.log('other', grouped.other ? grouped.other.length : 0);
     const metric =
-      median(grouped.number.map((c) => c.image.height)) /
-      median(grouped.letter.map((c) => c.image.height));
+      mean(grouped.number.map((c) => c.image.height)) /
+      mean(grouped.letter.map((c) => c.image.height));
     console.log(cardKey, metric);
-    features.push([metric]);
+    features.push(metric);
     // console.log(card.map((c) => ({ height: c.image.height, c: c.char })));
     // separate chars and
     // features.push([getCharHeightRatioDescriptor(card.map((c) => c.image))]);

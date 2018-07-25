@@ -84,7 +84,9 @@ async function exec() {
               char,
               code: char.charCodeAt(0),
               label: argv.oneClass ? +argv.oneClass : char.charCodeAt(0),
-              card: name
+              card: name,
+              line: i,
+              column: j
             });
           }
         }

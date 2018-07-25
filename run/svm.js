@@ -1,8 +1,6 @@
 // Runs a cross validation leaving all characters from an identity card out
 'use strict';
 
-const path = require('path');
-
 const uniq = require('lodash.uniq');
 const minimist = require('minimist');
 
@@ -64,8 +62,7 @@ function error(predicted, expected) {
   }
   console.log(
     `${correct}/${predicted.length} ( ${(
-      correct /
-      predicted.length *
+      (correct / predicted.length) *
       100
     ).toFixed(2)}% )`
   );

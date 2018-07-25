@@ -62,7 +62,6 @@
     "ml-matrix": "^5.0.1",
     "mrz": "^3.1.0",
     "ocr-tools": "^0.1.1",
-    "percentile": "^1.2.0",
     "radians-degrees": "^1.0.0",
     "stats-mad": "^1.0.0",
     "transformation-matrix": "^1.7.0"
