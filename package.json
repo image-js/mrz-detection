@@ -30,21 +30,21 @@
     "testEnvironment": "node"
   },
   "devDependencies": {
-    "babel-eslint": "^8.2.2",
-    "codecov": "^3.0.0",
+    "babel-eslint": "^8.2.6",
+    "codecov": "^3.0.4",
     "eslint": "^4.18.0",
-    "eslint-config-cheminfo": "^1.15.1",
-    "eslint-plugin-import": "^2.8.0",
-    "eslint-plugin-jest": "^21.12.2",
-    "jest": "^22.4.4",
+    "eslint-config-cheminfo": "^1.18.0",
+    "eslint-plugin-import": "^2.13.0",
+    "eslint-plugin-jest": "^21.18.0",
+    "jest": "^23.4.1",
     "make-promises-safe": "^1.1.0",
     "npm-run-all": "^4.1.2",
-    "papaparse": "^4.3.7",
+    "papaparse": "^4.5.0",
     "rimraf": "^2.6.2",
     "tableify": "^1.1.0"
   },
   "dependencies": {
-    "bson": "^2.0.4",
+    "bson": "^2.0.8",
     "fs-extra": "^6.0.1",
     "hog-features": "^1.0.0",
     "image-js": "^0.21.0",
@@ -64,6 +64,6 @@
     "mrz": "^3.1.0",
     "ocr-tools": "^0.1.1",
     "radians-degrees": "^1.0.0",
-    "transformation-matrix": "^1.7.0"
+    "transformation-matrix": "^1.12.0"
   }
 }
