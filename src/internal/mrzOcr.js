@@ -4,12 +4,12 @@ const { getLinesFromImage } = require('ocr-tools');
 
 const { predictImages } = require('../svm');
 
-async function mrzOcr(image, options = {}) {
+async function mrzOcr(image, roiOptions = {}) {
   let rois;
-  options = Object.assign({}, { method: 'svm' }, options);
+  roiOptions = Object.assign({}, { method: 'svm' }, roiOptions);
   let { lines, mask, painted, averageSurface } = getLinesFromImage(
     image,
-    options
+    roiOptions
   );
 
   // A line should have at least 5 ROIS (swiss driving license)

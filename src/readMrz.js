@@ -3,16 +3,8 @@
 const mrzOcr = require('./internal/mrzOcr');
 const roiOptions = require('./roiOptions');
 
-const fingerprintOptions = {
-  width: 12,
-  height: 12
-};
-
 async function readMrz(image, options = {}) {
-  var { ocrResult, mask, rois } = await mrzOcr(image, {
-    roiOptions,
-    fingerprintOptions
-  });
+  var { ocrResult, mask, rois } = await mrzOcr(image, roiOptions);
 
   if (options.saveName) {
     mask.save(options.saveName);
