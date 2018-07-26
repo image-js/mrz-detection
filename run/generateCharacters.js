@@ -46,7 +46,7 @@ async function generate() {
         `);
           const imageOptions = {
             allowedRotation: maxRotation,
-            numberPerLine: rotations + (rotations + 1) % 2, // odd number to ensure 0 angle included
+            numberPerLine: rotations + ((rotations + 1) % 2), // odd number to ensure 0 angle included
             fontSize,
             fontName: font
           };

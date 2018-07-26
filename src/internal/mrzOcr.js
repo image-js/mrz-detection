@@ -1,10 +1,10 @@
 'use strict';
 
-const { getLinesFromImage, doOcrOnLines } = require('ocr-tools');
+const { getLinesFromImage } = require('ocr-tools');
 
 const { predictImages } = require('../svm');
 
-async function mrzOcr(image, fontFingerprint, options = {}) {
+async function mrzOcr(image, options = {}) {
   let rois;
   options = Object.assign({}, { method: 'svm' }, options);
   let { lines, mask, painted, averageSurface } = getLinesFromImage(
@@ -12,8 +12,8 @@ async function mrzOcr(image, fontFingerprint, options = {}) {
     options
   );
 
+  // A line should have at least 5 ROIS (swiss driving license)
   lines = lines.filter((line) => line.rois.length > 5);
-  // we should make a filter by ROI size ?
 
   // we keep maximum the last 3 lines
   if (lines.length > 3) {
@@ -41,29 +41,18 @@ async function mrzOcr(image, fontFingerprint, options = {}) {
     }
   }
 
-  if (options.method === 'tanimoto') {
-    var ocrOptions = Object.assign({}, options.fingerprintOptions, {
-      maxNotFound: 411
-    });
-    ocrResult = doOcrOnLines(lines, fontFingerprint, ocrOptions).map(
-      (r) => r.text
-    );
-  } else if (options.method === 'svm') {
-    let predicted = await predictImages(rois.map((roi) => roi.image), 'ESC-v2');
-    predicted = predicted.map((p) => String.fromCharCode(p));
-    predicted.forEach((p, idx) => {
-      rois[idx].predicted = p;
-    });
-    let count = 0;
-    for (let line of lines) {
-      let lineText = '';
-      for (let i = 0; i < line.rois.length; i++) {
-        lineText += predicted[count++];
-      }
-      ocrResult.push(lineText);
+  let predicted = await predictImages(rois.map((roi) => roi.image), 'ESC-v2');
+  predicted = predicted.map((p) => String.fromCharCode(p));
+  predicted.forEach((p, idx) => {
+    rois[idx].predicted = p;
+  });
+  let count = 0;
+  for (let line of lines) {
+    let lineText = '';
+    for (let i = 0; i < line.rois.length; i++) {
+      lineText += predicted[count++];
     }
-  } else {
-    throw new Error('invalid MRZ OCR method');
+    ocrResult.push(lineText);
   }
 
   return {
