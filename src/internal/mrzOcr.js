@@ -1,6 +1,6 @@
 'use strict';
 
-const { getLinesFromImage } = require('ocr-tools');
+const { getLinesFromImage } = require('../ocr-tools');
 
 const { predictImages } = require('../svm');
 

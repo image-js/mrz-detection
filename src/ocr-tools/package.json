@@ -1,0 +1,51 @@
+{
+  "name": "ocr-tools",
+  "version": "0.2.0",
+  "description": "Various tools for OCR",
+  "main": "./src/index.js",
+  "files": [
+    "src"
+  ],
+  "scripts": {
+    "eslint": "eslint src run",
+    "eslint-fix": "npm run eslint -- --fix",
+    "test": "npm run test-only && npm run eslint",
+    "test-cov": "npm run test-only -- --coverage",
+    "test-travis": "npm run test-cov && npm run eslint",
+    "test-only": "echo 'No test for now...'"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/cheminfo-js/ocr.git"
+  },
+  "keywords": [
+    "ocr",
+    "image",
+    "optical",
+    "character",
+    "recognition"
+  ],
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/cheminfo-js/ocr-tools/issues"
+  },
+  "homepage": "https://github.com/cheminfo-js/ocr-tools#readme",
+  "optionalDependencies": {
+    "font-manager": "^0.2.2"
+  },
+  "devDependencies": {
+    "eslint": "^4.16.0",
+    "eslint-config-cheminfo": "^1.14.1",
+    "eslint-plugin-import": "^2.12.0",
+    "eslint-plugin-jest": "^21.7.0",
+    "image-js": "^0.21.0",
+    "jest": "^22.1.4"
+  },
+  "dependencies": {
+    "mkdirp": "^0.5.1",
+    "ml-array-mean": "^1.0.1",
+    "ml-array-median": "^1.0.1",
+    "ml-distance": "^2.1.1",
+    "ml-kmeans": "^4.0.0"
+  }
+}

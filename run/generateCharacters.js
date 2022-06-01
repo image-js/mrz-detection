@@ -4,7 +4,7 @@ const path = require('path');
 const assert = require('assert');
 
 const fs = require('fs-extra');
-const { generateSymbolImage, getLinesFromImage } = require('ocr-tools');
+const { generateSymbolImage, getLinesFromImage } = require('../src/ocr-tools');
 const minimist = require('minimist');
 
 const argv = minimist(process.argv.slice(2), {

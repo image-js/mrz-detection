@@ -2,7 +2,7 @@
 
 const { join, resolve, extname, parse: parsePath } = require('path');
 
-const { getLinesFromImage } = require('ocr-tools');
+const { getLinesFromImage } = require('../src/ocr-tools');
 const fs = require('fs-extra');
 const minimist = require('minimist');
 const IJS = require('image-js').Image;
